@@ -1,0 +1,28 @@
+{
+  "name": "word-sandbag",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "packageManager": "pnpm@10.33.2",
+  "scripts": {
+    "dev": "vite --port 3050 --strictPort",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --port 3050 --strictPort",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "framer-motion": "^11.18.2",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.7"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
