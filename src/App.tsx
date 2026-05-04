@@ -14,6 +14,8 @@ export function App() {
     hitCount,
     message,
     punch,
+    punchWith,
+    tap,
     removeWord,
   } = usePunch();
 
@@ -24,12 +26,18 @@ export function App() {
         <SandbagStage
           flyingWords={flyingWords}
           onWordComplete={removeWord}
+          onSandbagTap={tap}
           hitKey={hitKey}
           hitPower={hitPower}
           hitCount={hitCount}
           message={message}
         />
-        <InputPanel value={text} onChange={setText} onPunch={punch} />
+        <InputPanel
+          value={text}
+          onChange={setText}
+          onPunch={punch}
+          onQuickPunch={punchWith}
+        />
         <PrivacyNote />
         <p className="footer">送らない。残さない。ここで消す。</p>
       </div>

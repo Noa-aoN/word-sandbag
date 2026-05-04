@@ -4,12 +4,21 @@ type Props = {
   value: string;
   onChange: (value: string) => void;
   onPunch: () => void;
+  onQuickPunch: (text: string) => void;
   maxLength?: number;
 };
 
 const MAX = 200;
 
-export function InputPanel({ value, onChange, onPunch, maxLength = MAX }: Props) {
+const QUICK_PRESETS = [
+  "ふざけんな",
+  "もうやだ",
+  "なんでだよ",
+  "ありがとう",
+  "お疲れさま",
+] as const;
+
+export function InputPanel({ value, onChange, onPunch, onQuickPunch, maxLength = MAX }: Props) {
   const ref = useRef<HTMLTextAreaElement>(null);
   const trimmed = value.trim();
   const canPunch = trimmed.length > 0;
@@ -63,6 +72,22 @@ export function InputPanel({ value, onChange, onPunch, maxLength = MAX }: Props)
         >
           パンチする
         </button>
+      </div>
+      <div className="quick-punches">
+        <span className="quick-punches__label">サクッとパンチ</span>
+        <div className="quick-punches__row" role="group" aria-label="プリセットのパンチ">
+          {QUICK_PRESETS.map((preset) => (
+            <button
+              key={preset}
+              type="button"
+              className="quick-punch-button"
+              onClick={() => onQuickPunch(preset)}
+              aria-label={`「${preset}」とパンチする`}
+            >
+              {preset}
+            </button>
+          ))}
+        </div>
       </div>
     </section>
   );

@@ -7,6 +7,7 @@ import type { FlyingWord as FlyingWordType, PunchPower } from "../types/punch";
 type Props = {
   flyingWords: FlyingWordType[];
   onWordComplete: (id: string) => void;
+  onSandbagTap: () => void;
   hitKey: number;
   hitPower: PunchPower;
   hitCount: number;
@@ -16,22 +17,20 @@ type Props = {
 export function SandbagStage({
   flyingWords,
   onWordComplete,
+  onSandbagTap,
   hitKey,
   hitPower,
   hitCount,
   message,
 }: Props) {
   return (
-    <section
-      className="stage"
-      aria-label="サンドバッグの舞台"
-    >
+    <section className="stage" aria-label="サンドバッグの舞台">
       {hitCount > 0 && (
         <div className="stage__hits" aria-live="polite">
           この画面でのパンチ：{hitCount}発
         </div>
       )}
-      <Sandbag hitKey={hitKey} power={hitPower} />
+      <Sandbag hitKey={hitKey} power={hitPower} onTap={onSandbagTap} />
       <ImpactEffect hitKey={hitKey} power={hitPower} />
       <AnimatePresence>
         {flyingWords.map((w) => (

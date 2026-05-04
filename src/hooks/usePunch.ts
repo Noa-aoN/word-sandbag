@@ -8,7 +8,14 @@ const COMPLETE_MESSAGES = [
   "少しだけ、軽くなりますように。",
 ];
 
+const TAP_MESSAGES = [
+  "ポンッ。",
+  "そのままでいいです。",
+  "受け止めました。",
+];
+
 const MESSAGE_DURATION_MS = 1800;
+const TAP_MESSAGE_DURATION_MS = 900;
 const IMPACT_DELAY_MS_BY_POWER: Record<PunchPower, number> = {
   light: 380,
   normal: 430,
@@ -29,7 +36,7 @@ function bumpPower(power: PunchPower): PunchPower {
 }
 
 function isEmphasized(text: string): boolean {
-  const matches = text.match(/[!！?？]/g);
+  const matches = text.match(/[!!??]/gu);
   return (matches?.length ?? 0) >= 3;
 }
 
@@ -39,8 +46,13 @@ function vibrate(power: PunchPower) {
   try {
     navigator.vibrate(ms);
   } catch {
-    // navigator.vibrate may throw on some browsers when called without user activation
+    // navigator.vibrate may throw without user activation on some browsers
   }
+}
+
+function pickRandom<T>(items: readonly T[]): T | undefined {
+  if (items.length === 0) return undefined;
+  return items[Math.floor(Math.random() * items.length)];
 }
 
 let idCounter = 0;
@@ -71,10 +83,21 @@ export function usePunch() {
     [],
   );
 
-  const punch = useCallback(() => {
-    setText((current) => {
-      const trimmed = current.trim();
-      if (trimmed.length === 0) return current;
+  const showMessage = useCallback((msg: string, duration: number) => {
+    setMessage(msg);
+    if (messageTimerRef.current !== null) {
+      window.clearTimeout(messageTimerRef.current);
+    }
+    messageTimerRef.current = window.setTimeout(() => {
+      setMessage("");
+      messageTimerRef.current = null;
+    }, duration);
+  }, []);
+
+  const dispatchPunch = useCallback(
+    (content: string) => {
+      const trimmed = content.trim();
+      if (trimmed.length === 0) return;
 
       const basePower = classifyPower(trimmed);
       const power = isEmphasized(trimmed) ? bumpPower(basePower) : basePower;
@@ -96,25 +119,35 @@ export function usePunch() {
         setHitPower(power);
         setHitCount((c) => c + 1);
         setHitKey((k) => k + 1);
-
-        const msg =
-          COMPLETE_MESSAGES[Math.floor(Math.random() * COMPLETE_MESSAGES.length)] ?? "";
-        setMessage(msg);
-        if (messageTimerRef.current !== null) {
-          window.clearTimeout(messageTimerRef.current);
-        }
-        messageTimerRef.current = window.setTimeout(() => {
-          setMessage("");
-          messageTimerRef.current = null;
-        }, MESSAGE_DURATION_MS);
-
+        showMessage(pickRandom(COMPLETE_MESSAGES) ?? "", MESSAGE_DURATION_MS);
         vibrate(power);
         impactTimerRef.current = null;
       }, IMPACT_DELAY_MS_BY_POWER[power]);
+    },
+    [showMessage],
+  );
 
+  const punch = useCallback(() => {
+    setText((current) => {
+      dispatchPunch(current);
       return "";
     });
-  }, []);
+  }, [dispatchPunch]);
+
+  const punchWith = useCallback(
+    (preset: string) => {
+      dispatchPunch(preset);
+    },
+    [dispatchPunch],
+  );
+
+  const tap = useCallback(() => {
+    setHitPower("light");
+    setHitCount((c) => c + 1);
+    setHitKey((k) => k + 1);
+    showMessage(pickRandom(TAP_MESSAGES) ?? "", TAP_MESSAGE_DURATION_MS);
+    vibrate("light");
+  }, [showMessage]);
 
   const removeWord = useCallback((id: string) => {
     setFlyingWords((prev) => prev.filter((w) => w.id !== id));
@@ -129,6 +162,8 @@ export function usePunch() {
     hitCount,
     message,
     punch,
+    punchWith,
+    tap,
     removeWord,
   };
 }

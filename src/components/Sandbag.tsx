@@ -1,9 +1,11 @@
+import type { KeyboardEvent } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import type { PunchPower } from "../types/punch";
 
 type Props = {
   hitKey: number;
   power: PunchPower;
+  onTap?: () => void;
 };
 
 const swayByPower: Record<PunchPower, { x: number[]; rotate: number[]; duration: number }> = {
@@ -17,7 +19,7 @@ const idleSway = {
   transition: { duration: 4.2, repeat: Infinity, ease: "easeInOut" as const },
 };
 
-export function Sandbag({ hitKey, power }: Props) {
+export function Sandbag({ hitKey, power, onTap }: Props) {
   const reduce = useReducedMotion();
   const sway = swayByPower[power];
 
@@ -37,42 +39,60 @@ export function Sandbag({ hitKey, power }: Props) {
         ? { duration: 0 }
         : idleSway.transition;
 
+  const interactive = typeof onTap === "function";
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (!onTap) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onTap();
+    }
+  };
+
   return (
-    <motion.div
-      className="stage__sandbag-anchor"
-      key={hitKey}
-      animate={animate}
-      transition={transition}
-      style={{ originY: 0 }}
+    <div
+      className={`stage__sandbag-anchor${interactive ? " stage__sandbag-anchor--interactive" : ""}`}
+      role={interactive ? "button" : undefined}
+      aria-label={interactive ? "サンドバッグを叩く" : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      onClick={onTap}
+      onKeyDown={interactive ? handleKeyDown : undefined}
     >
-      <svg
-        className="sandbag"
-        viewBox="0 0 120 200"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
+      <motion.div
+        className="stage__sandbag-motion"
+        key={hitKey}
+        animate={animate}
+        transition={transition}
+        style={{ originY: 0 }}
       >
-        <defs>
-          <linearGradient id="sandbagGradient" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#ef7a4f" />
-            <stop offset="55%" stopColor="#d94a2a" />
-            <stop offset="100%" stopColor="#a83218" />
-          </linearGradient>
-        </defs>
-        <path className="sandbag__chain" d="M50 6 L60 24" />
-        <path className="sandbag__chain" d="M70 6 L60 24" />
-        <rect className="sandbag__cap" x="40" y="22" width="40" height="14" rx="4" />
-        <path
-          className="sandbag__body-main"
-          d="M30 40 Q60 32 90 40 L92 156 Q60 168 28 156 Z"
-        />
-        <rect className="sandbag__band" x="28" y="78" width="64" height="10" />
-        <rect className="sandbag__band" x="28" y="118" width="64" height="10" />
-        <path
-          className="sandbag__shine"
-          d="M40 46 Q44 100 42 150 Q38 100 38 50 Z"
-        />
-        <ellipse className="sandbag__cap" cx="60" cy="160" rx="32" ry="8" />
-      </svg>
-    </motion.div>
+        <svg
+          className="sandbag"
+          viewBox="0 0 120 200"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <defs>
+            <linearGradient id="sandbagGradient" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor="#ef7a4f" />
+              <stop offset="55%" stopColor="#d94a2a" />
+              <stop offset="100%" stopColor="#a83218" />
+            </linearGradient>
+          </defs>
+          <path className="sandbag__chain" d="M50 6 L60 24" />
+          <path className="sandbag__chain" d="M70 6 L60 24" />
+          <rect className="sandbag__cap" x="40" y="22" width="40" height="14" rx="4" />
+          <path
+            className="sandbag__body-main"
+            d="M30 40 Q60 32 90 40 L92 156 Q60 168 28 156 Z"
+          />
+          <rect className="sandbag__band" x="28" y="78" width="64" height="10" />
+          <rect className="sandbag__band" x="28" y="118" width="64" height="10" />
+          <path
+            className="sandbag__shine"
+            d="M40 46 Q44 100 42 150 Q38 100 38 50 Z"
+          />
+          <ellipse className="sandbag__cap" cx="60" cy="160" rx="32" ry="8" />
+        </svg>
+      </motion.div>
+    </div>
   );
 }
