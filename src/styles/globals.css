@@ -434,8 +434,13 @@ textarea {
 }
 
 .stage__sandbag-anchor--interactive {
-  cursor: pointer;
+  cursor: grab;
   pointer-events: auto;
+  touch-action: none;
+}
+
+.stage__sandbag-anchor--interactive:active {
+  cursor: grabbing;
 }
 
 .stage__sandbag-anchor--interactive:active .stage__sandbag-motion {

@@ -86,13 +86,20 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
   const eyesClosed = kind === "crunch";
 
   return (
-    <div
+    <motion.div
       className={`stage__sandbag-anchor${interactive ? " stage__sandbag-anchor--interactive" : ""}`}
       role={interactive ? "button" : undefined}
-      aria-label={interactive ? "サンドバッグを叩く" : undefined}
+      aria-label={interactive ? "サンドバッグを叩いたり引っ張ったりする" : undefined}
       tabIndex={interactive ? 0 : undefined}
-      onClick={onTap}
+      onTap={interactive ? () => onTap?.() : undefined}
       onKeyDown={interactive ? handleKeyDown : undefined}
+      drag={interactive}
+      dragConstraints={{ left: -90, right: 90, top: -45, bottom: 100 }}
+      dragElastic={0.4}
+      dragSnapToOrigin
+      dragTransition={{ bounceStiffness: 220, bounceDamping: 12 }}
+      whileDrag={{ scale: 1.04 }}
+      style={{ touchAction: "none" }}
     >
       <motion.div
         className="stage__sandbag-idle"
@@ -168,6 +175,6 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
           </svg>
         </motion.div>
       </motion.div>
-    </div>
+    </motion.div>
   );
 }

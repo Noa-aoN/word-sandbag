@@ -6,6 +6,8 @@ type AnyWindow = Window & {
 };
 
 let ctx: AudioContext | null = null;
+let masterGain: GainNode | null = null;
+let noiseBuf: AudioBuffer | null = null;
 
 function getCtx(): AudioContext | null {
   if (typeof window === "undefined") return null;
@@ -27,50 +29,213 @@ function ensureRunning(c: AudioContext) {
   }
 }
 
-const PUNCH_PROFILE: Record<PunchPower, {
-  freq: number;
-  drop: number;
-  dur: number;
-  vol: number;
-  cutoff: number;
-}> = {
-  light: { freq: 240, drop: 120, dur: 0.13, vol: 0.18, cutoff: 720 },
-  normal: { freq: 170, drop: 80, dur: 0.18, vol: 0.24, cutoff: 540 },
-  heavy: { freq: 110, drop: 55, dur: 0.26, vol: 0.32, cutoff: 380 },
+function getMaster(c: AudioContext): GainNode {
+  if (masterGain && masterGain.context === c) return masterGain;
+  const master = c.createGain();
+  master.gain.value = 0.7;
+  const comp = c.createDynamicsCompressor();
+  comp.threshold.value = -8;
+  comp.knee.value = 6;
+  comp.ratio.value = 4;
+  comp.attack.value = 0.003;
+  comp.release.value = 0.12;
+  master.connect(comp);
+  comp.connect(c.destination);
+  masterGain = master;
+  return master;
+}
+
+function getNoiseBuffer(c: AudioContext): AudioBuffer {
+  if (noiseBuf && noiseBuf.sampleRate === c.sampleRate) return noiseBuf;
+  const len = Math.floor(c.sampleRate * 0.4);
+  const buf = c.createBuffer(1, len, c.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+  noiseBuf = buf;
+  return buf;
+}
+
+function noiseSourceWithOffset(c: AudioContext): { node: AudioBufferSourceNode; offset: number } {
+  const node = c.createBufferSource();
+  const buf = getNoiseBuffer(c);
+  node.buffer = buf;
+  const maxOffset = Math.max(0, buf.duration - 0.06);
+  return { node, offset: Math.random() * maxOffset };
+}
+
+type PunchProfile = {
+  bodyFreqStart: number;
+  bodyFreqEnd: number;
+  bodyDur: number;
+  bodyVol: number;
+  subFreqStart: number;
+  subFreqEnd: number;
+  subDur: number;
+  subVol: number;
+  slapBP: number;
+  slapBPQ: number;
+  slapDur: number;
+  slapVol: number;
+  clickVol: number;
+  clickDur: number;
 };
+
+const PUNCH_PROFILE: Record<PunchPower, PunchProfile> = {
+  light: {
+    bodyFreqStart: 180,
+    bodyFreqEnd: 80,
+    bodyDur: 0.14,
+    bodyVol: 0.22,
+    subFreqStart: 70,
+    subFreqEnd: 40,
+    subDur: 0.1,
+    subVol: 0.1,
+    slapBP: 1900,
+    slapBPQ: 1.4,
+    slapDur: 0.038,
+    slapVol: 0.11,
+    clickVol: 0.05,
+    clickDur: 0.012,
+  },
+  normal: {
+    bodyFreqStart: 140,
+    bodyFreqEnd: 55,
+    bodyDur: 0.2,
+    bodyVol: 0.3,
+    subFreqStart: 55,
+    subFreqEnd: 32,
+    subDur: 0.16,
+    subVol: 0.16,
+    slapBP: 1450,
+    slapBPQ: 1.6,
+    slapDur: 0.045,
+    slapVol: 0.14,
+    clickVol: 0.06,
+    clickDur: 0.013,
+  },
+  heavy: {
+    bodyFreqStart: 100,
+    bodyFreqEnd: 38,
+    bodyDur: 0.32,
+    bodyVol: 0.34,
+    subFreqStart: 45,
+    subFreqEnd: 26,
+    subDur: 0.24,
+    subVol: 0.22,
+    slapBP: 1100,
+    slapBPQ: 1.8,
+    slapDur: 0.055,
+    slapVol: 0.18,
+    clickVol: 0.07,
+    clickDur: 0.014,
+  },
+};
+
+function playNoiseLayer(
+  c: AudioContext,
+  master: GainNode,
+  now: number,
+  filter: BiquadFilterNode,
+  vol: number,
+  attack: number,
+  dur: number,
+) {
+  const { node, offset } = noiseSourceWithOffset(c);
+  const gain = c.createGain();
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(vol, now + attack);
+  gain.gain.exponentialRampToValueAtTime(0.0008, now + dur);
+  node.connect(filter);
+  filter.connect(gain);
+  gain.connect(master);
+  node.start(now, offset);
+  node.stop(now + dur + 0.01);
+}
+
+function playToneLayer(
+  c: AudioContext,
+  master: GainNode,
+  now: number,
+  type: OscillatorType,
+  freqStart: number,
+  freqEnd: number,
+  vol: number,
+  attack: number,
+  dur: number,
+) {
+  const osc = c.createOscillator();
+  const gain = c.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freqStart, now);
+  osc.frequency.exponentialRampToValueAtTime(Math.max(20, freqEnd), now + dur);
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(vol, now + attack);
+  gain.gain.exponentialRampToValueAtTime(0.0008, now + dur);
+  osc.connect(gain);
+  gain.connect(master);
+  osc.start(now);
+  osc.stop(now + dur + 0.02);
+}
 
 function thump(power: PunchPower) {
   const c = getCtx();
   if (!c) return;
   ensureRunning(c);
+  const master = getMaster(c);
   const now = c.currentTime;
   const cfg = PUNCH_PROFILE[power];
 
-  const osc = c.createOscillator();
-  const gain = c.createGain();
-  const filter = c.createBiquadFilter();
-  filter.type = "lowpass";
-  filter.frequency.setValueAtTime(cfg.cutoff, now);
+  // Body: kick-drum style sine drop — gives the "thud" weight
+  playToneLayer(
+    c,
+    master,
+    now,
+    "sine",
+    cfg.bodyFreqStart,
+    cfg.bodyFreqEnd,
+    cfg.bodyVol,
+    0.006,
+    cfg.bodyDur,
+  );
 
-  osc.type = "square";
-  osc.frequency.setValueAtTime(cfg.freq, now);
-  osc.frequency.exponentialRampToValueAtTime(cfg.drop, now + cfg.dur);
+  // Sub-bass: very low sine for chest-impact feel
+  playToneLayer(
+    c,
+    master,
+    now,
+    "sine",
+    cfg.subFreqStart,
+    cfg.subFreqEnd,
+    cfg.subVol,
+    0.012,
+    cfg.subDur,
+  );
 
-  gain.gain.setValueAtTime(0, now);
-  gain.gain.linearRampToValueAtTime(cfg.vol, now + 0.006);
-  gain.gain.exponentialRampToValueAtTime(0.0008, now + cfg.dur);
+  // Leather slap: filtered noise burst
+  {
+    const bp = c.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.setValueAtTime(cfg.slapBP, now);
+    bp.Q.setValueAtTime(cfg.slapBPQ, now);
+    playNoiseLayer(c, master, now, bp, cfg.slapVol, 0.003, cfg.slapDur);
+  }
 
-  osc.connect(filter);
-  filter.connect(gain);
-  gain.connect(c.destination);
-  osc.start(now);
-  osc.stop(now + cfg.dur + 0.02);
+  // Sharp click: highpassed noise transient (glove leather snap)
+  {
+    const hp = c.createBiquadFilter();
+    hp.type = "highpass";
+    hp.frequency.setValueAtTime(3500, now);
+    playNoiseLayer(c, master, now, hp, cfg.clickVol, 0.001, cfg.clickDur);
+  }
 }
 
 function meow() {
   const c = getCtx();
   if (!c) return;
   ensureRunning(c);
+  const master = getMaster(c);
   const now = c.currentTime;
 
   const osc = c.createOscillator();
@@ -81,19 +246,26 @@ function meow() {
   osc.frequency.linearRampToValueAtTime(560, now + 0.24);
 
   gain.gain.setValueAtTime(0, now);
-  gain.gain.linearRampToValueAtTime(0.16, now + 0.02);
+  gain.gain.linearRampToValueAtTime(0.18, now + 0.02);
   gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.32);
 
   osc.connect(gain);
-  gain.connect(c.destination);
+  gain.connect(master);
   osc.start(now);
   osc.stop(now + 0.34);
+
+  const bp = c.createBiquadFilter();
+  bp.type = "bandpass";
+  bp.frequency.setValueAtTime(900, now);
+  bp.Q.setValueAtTime(1.2, now);
+  playNoiseLayer(c, master, now, bp, 0.06, 0.004, 0.045);
 }
 
 function hum() {
   const c = getCtx();
   if (!c) return;
   ensureRunning(c);
+  const master = getMaster(c);
   const now = c.currentTime;
 
   const osc = c.createOscillator();
@@ -103,11 +275,11 @@ function hum() {
   osc.frequency.linearRampToValueAtTime(180, now + 0.4);
 
   gain.gain.setValueAtTime(0, now);
-  gain.gain.linearRampToValueAtTime(0.1, now + 0.08);
+  gain.gain.linearRampToValueAtTime(0.12, now + 0.08);
   gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.55);
 
   osc.connect(gain);
-  gain.connect(c.destination);
+  gain.connect(master);
   osc.start(now);
   osc.stop(now + 0.6);
 }
@@ -133,4 +305,5 @@ export function primeAudio() {
   const c = getCtx();
   if (!c) return;
   ensureRunning(c);
+  getMaster(c);
 }
