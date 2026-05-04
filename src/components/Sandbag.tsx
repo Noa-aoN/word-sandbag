@@ -6,6 +6,8 @@ type Props = {
   hitKey: number;
   power: PunchPower;
   kind: ImpactKind;
+  side: number;
+  intensity: number;
   onTap?: () => void;
 };
 
@@ -27,7 +29,7 @@ const catSwayByPower: Record<
   heavy: { x: [0, -14, 12, -9, 5, 0], rotate: [0, -3, 2, -1.5, 0.6, 0], duration: 0.46 },
 };
 
-export function Sandbag({ hitKey, power, kind, onTap }: Props) {
+export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) {
   const reduce = useReducedMotion();
 
   const interactive = typeof onTap === "function";
@@ -67,19 +69,19 @@ export function Sandbag({ hitKey, power, kind, onTap }: Props) {
         hitTransition: { duration: 0.55, ease: "easeOut" as const },
       };
     }
-    if (kind === "cat") {
-      const sway = catSwayByPower[power];
-      return {
-        hitAnimate: { x: sway.x, rotate: sway.rotate, scale: 1 },
-        hitTransition: { duration: sway.duration, ease: "easeOut" as const },
-      };
-    }
-    const sway = punchSwayByPower[power];
+    const base = kind === "cat" ? catSwayByPower[power] : punchSwayByPower[power];
+    const flip = side === -1 ? -1 : 1;
+    const amp = Math.min(3, Math.max(0.9, intensity));
+    const durMul = Math.min(1.4, 0.85 + amp * 0.15);
     return {
-      hitAnimate: { x: sway.x, rotate: sway.rotate, scale: 1 },
-      hitTransition: { duration: sway.duration, ease: "easeOut" as const },
+      hitAnimate: {
+        x: base.x.map((v) => v * flip * amp),
+        rotate: base.rotate.map((v) => v * flip * amp),
+        scale: 1,
+      },
+      hitTransition: { duration: base.duration * durMul, ease: "easeOut" as const },
     };
-  }, [hitKey, kind, power, reduce]);
+  }, [hitKey, kind, power, reduce, side, intensity]);
 
   const eyesClosed = kind === "crunch";
 

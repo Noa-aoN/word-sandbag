@@ -12,11 +12,13 @@ import type {
 type Props = {
   flyingWords: FlyingWordType[];
   onWordComplete: (id: string) => void;
-  onCharImpact: (power: PunchPower, kind: PunchKind) => void;
+  onCharImpact: (power: PunchPower, kind: PunchKind, side: number) => void;
   onSandbagTap: () => void;
   hitKey: number;
   hitPower: PunchPower;
   hitKind: ImpactKind;
+  hitSide: number;
+  hitIntensity: number;
   hitCount: number;
   message: string;
 };
@@ -29,6 +31,8 @@ export function SandbagStage({
   hitKey,
   hitPower,
   hitKind,
+  hitSide,
+  hitIntensity,
   hitCount,
   message,
 }: Props) {
@@ -55,8 +59,15 @@ export function SandbagStage({
           <span className="stage__seal-suf">発</span>
         </div>
       )}
-      <Sandbag hitKey={hitKey} power={hitPower} kind={hitKind} onTap={onSandbagTap} />
-      <ImpactEffect hitKey={hitKey} power={hitPower} kind={hitKind} />
+      <Sandbag
+        hitKey={hitKey}
+        power={hitPower}
+        kind={hitKind}
+        side={hitSide}
+        intensity={hitIntensity}
+        onTap={onSandbagTap}
+      />
+      <ImpactEffect hitKey={hitKey} power={hitPower} kind={hitKind} side={hitSide} />
       <AnimatePresence>
         {flyingWords.map((w) => (
           <FlyingWord

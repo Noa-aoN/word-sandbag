@@ -29,6 +29,12 @@ const SPEED_MIN = 0.5;
 const SPEED_MAX = 1.7;
 const SPEED_DEFAULT = 1.0;
 
+const INTENSITY_MIN = 1.0;
+const INTENSITY_MAX = 3.0;
+const INTENSITY_INC = 0.15;
+const INTENSITY_CRUNCH_DEC = 0.25;
+const INTENSITY_DECAY_MS = 1800;
+
 function classifyPower(text: string): PunchPower {
   const len = text.length;
   if (len <= 10) return "light";
@@ -79,6 +85,8 @@ export function usePunch() {
   const [hitKey, setHitKey] = useState(0);
   const [hitPower, setHitPower] = useState<PunchPower>("normal");
   const [hitKind, setHitKind] = useState<ImpactKind>("punch");
+  const [hitSide, setHitSide] = useState(0);
+  const [hitIntensity, setHitIntensity] = useState(INTENSITY_MIN);
   const [hitCount, setHitCount] = useState(0);
   const [message, setMessage] = useState("");
   const [speed, setSpeedState] = useState(SPEED_DEFAULT);
@@ -86,6 +94,7 @@ export function usePunch() {
 
   const messageTimerRef = useRef<number | null>(null);
   const messageDelayTimerRef = useRef<number | null>(null);
+  const intensityDecayRef = useRef<number | null>(null);
   const soundOnRef = useRef(soundOn);
   soundOnRef.current = soundOn;
 
@@ -94,9 +103,21 @@ export function usePunch() {
       if (messageTimerRef.current !== null) window.clearTimeout(messageTimerRef.current);
       if (messageDelayTimerRef.current !== null)
         window.clearTimeout(messageDelayTimerRef.current);
+      if (intensityDecayRef.current !== null)
+        window.clearTimeout(intensityDecayRef.current);
     },
     [],
   );
+
+  const scheduleIntensityDecay = useCallback(() => {
+    if (intensityDecayRef.current !== null) {
+      window.clearTimeout(intensityDecayRef.current);
+    }
+    intensityDecayRef.current = window.setTimeout(() => {
+      setHitIntensity(INTENSITY_MIN);
+      intensityDecayRef.current = null;
+    }, INTENSITY_DECAY_MS);
+  }, []);
 
   const showMessage = useCallback((msg: string, duration: number) => {
     if (!msg) return;
@@ -180,8 +201,14 @@ export function usePunch() {
       }
       setHitPower("light");
       setHitKind("crunch");
+      setHitSide(0);
       setHitCount((c) => c + 1);
       setHitKey((k) => k + 1);
+      setHitIntensity((prev) => Math.max(INTENSITY_MIN, prev - INTENSITY_CRUNCH_DEC));
+      if (intensityDecayRef.current !== null) {
+        window.clearTimeout(intensityDecayRef.current);
+        intensityDecayRef.current = null;
+      }
       showMessage(pickRandom(CRUNCH_MESSAGES) ?? "", MESSAGE_DURATION_MS);
       if (soundOnRef.current) playImpact("crunch", "light");
       return current;
@@ -202,6 +229,7 @@ export function usePunch() {
   const tap = useCallback(() => {
     setHitPower("light");
     setHitKind("tap");
+    setHitSide(0);
     setHitCount((c) => c + 1);
     setHitKey((k) => k + 1);
     showMessage(pickRandom(TAP_MESSAGES) ?? "", TAP_MESSAGE_DURATION_MS);
@@ -209,14 +237,30 @@ export function usePunch() {
     vibrate("light");
   }, [showMessage]);
 
-  const charImpact = useCallback((power: PunchPower, kind: PunchKind) => {
-    setHitPower(power);
-    setHitKind(kind);
-    setHitCount((c) => c + 1);
-    setHitKey((k) => k + 1);
-    if (soundOnRef.current) playImpact(kind, power);
-    if (kind !== "crunch") vibrate(power);
-  }, []);
+  const charImpact = useCallback(
+    (power: PunchPower, kind: PunchKind, side: number) => {
+      setHitPower(power);
+      setHitKind(kind);
+      setHitSide(side);
+      setHitCount((c) => c + 1);
+      setHitKey((k) => k + 1);
+
+      if (kind === "crunch") {
+        setHitIntensity((prev) => Math.max(INTENSITY_MIN, prev - INTENSITY_CRUNCH_DEC));
+        if (intensityDecayRef.current !== null) {
+          window.clearTimeout(intensityDecayRef.current);
+          intensityDecayRef.current = null;
+        }
+      } else {
+        setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC));
+        scheduleIntensityDecay();
+      }
+
+      if (soundOnRef.current) playImpact(kind, power);
+      if (kind !== "crunch") vibrate(power);
+    },
+    [scheduleIntensityDecay],
+  );
 
   const removeWord = useCallback((id: string) => {
     setFlyingWords((prev) => prev.filter((w) => w.id !== id));
@@ -229,6 +273,8 @@ export function usePunch() {
     hitKey,
     hitPower,
     hitKind,
+    hitSide,
+    hitIntensity,
     hitCount,
     message,
     speed,

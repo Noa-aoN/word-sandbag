@@ -5,6 +5,7 @@ type Props = {
   hitKey: number;
   power: PunchPower;
   kind: ImpactKind;
+  side: number;
 };
 
 const PUNCH_LABEL: Record<PunchPower, string> = {
@@ -26,16 +27,20 @@ function labelFor(kind: ImpactKind, power: PunchPower): string {
   return PUNCH_LABEL[power];
 }
 
-export function ImpactEffect({ hitKey, power, kind }: Props) {
+export function ImpactEffect({ hitKey, power, kind, side }: Props) {
   const reduce = useReducedMotion();
   if (hitKey === 0) return null;
 
   const scale = sizeByPower[power];
   const showBurst = !reduce && kind !== "crunch";
   const burstColor = kind === "cat" ? "var(--vermilion-soft)" : "var(--vermilion-soft)";
+  const offsetPx = (kind === "punch" || kind === "cat") ? side * 30 : 0;
+  const wrapStyle = {
+    transform: `translate(calc(-50% + ${offsetPx}px), -50%)`,
+  };
 
   return (
-    <div className={`impact-wrap impact-wrap--${kind}`} aria-hidden="true">
+    <div className={`impact-wrap impact-wrap--${kind}`} style={wrapStyle} aria-hidden="true">
       <motion.div
         key={hitKey}
         className={`impact impact--${kind}`}

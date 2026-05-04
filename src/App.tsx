@@ -12,6 +12,8 @@ export function App() {
     hitKey,
     hitPower,
     hitKind,
+    hitSide,
+    hitIntensity,
     hitCount,
     message,
     speed,
@@ -40,6 +42,8 @@ export function App() {
           hitKey={hitKey}
           hitPower={hitPower}
           hitKind={hitKind}
+          hitSide={hitSide}
+          hitIntensity={hitIntensity}
           hitCount={hitCount}
           message={message}
         />
