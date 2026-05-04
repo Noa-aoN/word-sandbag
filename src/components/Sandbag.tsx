@@ -71,7 +71,7 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
 
   const handlePan = (_e: PointerEvent, info: PanInfo) => {
     if (!dragActiveRef.current) return;
-    const r = clamp(info.offset.x * DRAG_ROTATE_FACTOR, -DRAG_ROTATE_MAX, DRAG_ROTATE_MAX);
+    const r = clamp(-info.offset.x * DRAG_ROTATE_FACTOR, -DRAG_ROTATE_MAX, DRAG_ROTATE_MAX);
     const stretch = 1 + Math.max(0, info.offset.y) * DRAG_STRETCH_FACTOR;
     dragRotate.set(r);
     dragScaleY.set(Math.min(DRAG_STRETCH_MAX, stretch));
