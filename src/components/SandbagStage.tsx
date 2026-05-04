@@ -25,9 +25,17 @@ export function SandbagStage({
 }: Props) {
   return (
     <section className="stage" aria-label="サンドバッグの舞台">
+      <span className="stage__corner-tag" aria-hidden="true">
+        受付中
+      </span>
       {hitCount > 0 && (
-        <div className="stage__hits" aria-live="polite">
-          この画面でのパンチ：{hitCount}発
+        <div
+          key={hitCount}
+          className="stage__seal"
+          aria-label={`このセッションで${hitCount}回パンチしました`}
+        >
+          <span className="stage__seal-num">{hitCount}</span>
+          <span className="stage__seal-suf">発</span>
         </div>
       )}
       <Sandbag hitKey={hitKey} power={hitPower} onTap={onSandbagTap} />

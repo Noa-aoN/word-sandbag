@@ -39,7 +39,14 @@ export function App() {
           onQuickPunch={punchWith}
         />
         <PrivacyNote />
-        <p className="footer">送らない。残さない。ここで消す。</p>
+        <p className="footer">
+          <span className="footer__rule" aria-hidden="true" />
+          <span className="footer__mono" aria-hidden="true">
+            HERE &amp; GONE
+          </span>
+          <span className="footer__rule" aria-hidden="true" />
+        </p>
+        <p className="footer__sub">送らない。残さない。ここで消す。</p>
       </div>
     </div>
   );

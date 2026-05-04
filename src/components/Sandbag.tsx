@@ -72,9 +72,9 @@ export function Sandbag({ hitKey, power, onTap }: Props) {
         >
           <defs>
             <linearGradient id="sandbagGradient" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="#ef7a4f" />
-              <stop offset="55%" stopColor="#d94a2a" />
-              <stop offset="100%" stopColor="#a83218" />
+              <stop offset="0%" stopColor="#e35a37" />
+              <stop offset="50%" stopColor="#c5392a" />
+              <stop offset="100%" stopColor="#7a1d0c" />
             </linearGradient>
           </defs>
           <path className="sandbag__chain" d="M50 6 L60 24" />

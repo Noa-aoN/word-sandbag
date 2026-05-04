@@ -74,15 +74,21 @@ export function InputPanel({ value, onChange, onPunch, onQuickPunch, maxLength =
         </button>
       </div>
       <div className="quick-punches">
-        <span className="quick-punches__label">サクッとパンチ</span>
+        <div className="quick-punches__head">
+          <span className="quick-punches__label">サクッとパンチ</span>
+          <span className="quick-punches__tag" aria-hidden="true">
+            PRESET
+          </span>
+        </div>
         <div className="quick-punches__row" role="group" aria-label="プリセットのパンチ">
-          {QUICK_PRESETS.map((preset) => (
+          {QUICK_PRESETS.map((preset, i) => (
             <button
               key={preset}
               type="button"
               className="quick-punch-button"
               onClick={() => onQuickPunch(preset)}
               aria-label={`「${preset}」とパンチする`}
+              style={{ animationDelay: `${0.06 * i}s` }}
             >
               {preset}
             </button>
