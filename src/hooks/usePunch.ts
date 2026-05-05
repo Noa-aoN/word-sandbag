@@ -7,6 +7,7 @@ import type {
   PunchPower,
 } from "../types/punch";
 import { playClank, playErupt, playImpact, primeAudio } from "../lib/sound";
+import { bumpPower, classifyPower, isEmphasized } from "../lib/power";
 import { clampNumber, sanitizeInput } from "../lib/sanitize";
 
 const COMPLETE_MESSAGES = [
@@ -48,24 +49,6 @@ const DEPART_DURATION_MS = 1400;
 const MISSING_DURATION_MS = 1500;
 const RETURN_MESSAGE = "新しいの持ってきたよ。";
 const RETURN_MESSAGE_DURATION_MS = 2400;
-
-function classifyPower(text: string): PunchPower {
-  const len = text.length;
-  if (len <= 10) return "light";
-  if (len <= 40) return "normal";
-  return "heavy";
-}
-
-function bumpPower(power: PunchPower): PunchPower {
-  if (power === "light") return "normal";
-  if (power === "normal") return "heavy";
-  return "heavy";
-}
-
-function isEmphasized(text: string): boolean {
-  const matches = text.match(/[!!??]/gu);
-  return (matches?.length ?? 0) >= 3;
-}
 
 function vibrate(power: PunchPower) {
   if (typeof navigator === "undefined" || typeof navigator.vibrate !== "function") return;
