@@ -380,6 +380,88 @@ function upperLift() {
   });
 }
 
+export function playErupt() {
+  const c = getCtx();
+  if (!c) return;
+  ensureRunning(c);
+  const master = getMaster(c);
+  const now = c.currentTime;
+
+  // Phase 1: heavy break thud (chain snaps, bag tears off)
+  thumpInto(c, master, now, {
+    bodyFreqStart: 110,
+    bodyFreqEnd: 28,
+    bodyDur: 0.45,
+    bodyVol: 0.4,
+    subFreqStart: 48,
+    subFreqEnd: 22,
+    subDur: 0.4,
+    subVol: 0.3,
+    slapBP: 1000,
+    slapBPQ: 2.2,
+    slapDur: 0.08,
+    slapVol: 0.22,
+    clickVol: 0.1,
+    clickDur: 0.02,
+  });
+
+  // Metallic crack of the chain
+  {
+    const { node, offset } = noiseSourceWithOffset(c);
+    const bp = c.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.setValueAtTime(3800, now);
+    bp.Q.setValueAtTime(4, now);
+    const gain = c.createGain();
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.12, now + 0.002);
+    gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.07);
+    node.connect(bp);
+    bp.connect(gain);
+    gain.connect(master);
+    node.start(now, offset);
+    node.stop(now + 0.09);
+  }
+
+  // Phase 2: whoosh as the bag spins off-screen
+  const whooshAt = now + 0.08;
+
+  {
+    const osc = c.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(820, whooshAt);
+    osc.frequency.exponentialRampToValueAtTime(180, whooshAt + 1.0);
+    const gain = c.createGain();
+    gain.gain.setValueAtTime(0, whooshAt);
+    gain.gain.linearRampToValueAtTime(0.07, whooshAt + 0.06);
+    gain.gain.linearRampToValueAtTime(0.05, whooshAt + 0.4);
+    gain.gain.exponentialRampToValueAtTime(0.0008, whooshAt + 1.15);
+    osc.connect(gain);
+    gain.connect(master);
+    osc.start(whooshAt);
+    osc.stop(whooshAt + 1.2);
+  }
+
+  {
+    const { node, offset } = noiseSourceWithOffset(c);
+    const bp = c.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.setValueAtTime(2200, whooshAt);
+    bp.frequency.exponentialRampToValueAtTime(380, whooshAt + 1.0);
+    bp.Q.setValueAtTime(2.4, whooshAt);
+    const gain = c.createGain();
+    gain.gain.setValueAtTime(0, whooshAt);
+    gain.gain.linearRampToValueAtTime(0.14, whooshAt + 0.08);
+    gain.gain.linearRampToValueAtTime(0.09, whooshAt + 0.5);
+    gain.gain.exponentialRampToValueAtTime(0.0008, whooshAt + 1.15);
+    node.connect(bp);
+    bp.connect(gain);
+    gain.connect(master);
+    node.start(whooshAt, offset);
+    node.stop(whooshAt + 1.2);
+  }
+}
+
 export function playImpact(kind: ImpactKind, power: PunchPower) {
   switch (kind) {
     case "cat":

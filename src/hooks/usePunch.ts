@@ -6,7 +6,7 @@ import type {
   PunchKind,
   PunchPower,
 } from "../types/punch";
-import { playImpact, primeAudio } from "../lib/sound";
+import { playErupt, playImpact, primeAudio } from "../lib/sound";
 import { clampNumber, sanitizeInput } from "../lib/sanitize";
 
 const COMPLETE_MESSAGES = [
@@ -149,6 +149,7 @@ export function usePunch() {
     }
 
     setBagState("departing");
+    if (soundOnRef.current) playErupt();
 
     const t1 = window.setTimeout(() => {
       setBagState("missing");
