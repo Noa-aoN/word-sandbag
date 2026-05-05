@@ -1,5 +1,6 @@
 import { motion, useReducedMotion } from "framer-motion";
 import type { ImpactKind, PunchPower } from "../types/punch";
+import burstSrc from "../assets/sandbag/burst.png";
 
 type Props = {
   hitKey: number;
@@ -33,7 +34,6 @@ export function ImpactEffect({ hitKey, power, kind, side }: Props) {
 
   const scale = sizeByPower[power];
   const showBurst = !reduce && kind !== "crunch";
-  const burstColor = kind === "cat" ? "var(--vermilion-soft)" : "var(--vermilion-soft)";
   const offsetPx = (kind === "punch" || kind === "cat") ? side * 30 : 0;
   const wrapStyle = {
     transform: `translate(calc(-50% + ${offsetPx}px), -50%)`,
@@ -52,12 +52,14 @@ export function ImpactEffect({ hitKey, power, kind, side }: Props) {
         transition={{ duration: reduce ? 0.2 : 0.55, times: [0, 0.3, 1] }}
       >
         {showBurst && (
-          <motion.span
-            className="impact__burst"
-            initial={{ opacity: 0.6, scale: 0.4 }}
-            animate={{ opacity: 0, scale: 1.6 * scale }}
+          <motion.img
+            className="impact__burst-img"
+            src={burstSrc}
+            alt=""
+            draggable={false}
+            initial={{ opacity: 0, scale: 0.4, rotate: -8 }}
+            animate={{ opacity: [0.95, 0], scale: [0.5 * scale, 1.5 * scale], rotate: 12 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            style={{ borderColor: burstColor }}
           />
         )}
         <span className="impact__text">{labelFor(kind, power)}</span>

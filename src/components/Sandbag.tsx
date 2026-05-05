@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import {
   animate,
   motion,
@@ -7,6 +7,8 @@ import {
   type PanInfo,
 } from "framer-motion";
 import type { ImpactKind, PunchPower } from "../types/punch";
+import sandbagSrc from "../assets/sandbag/sandbag.png";
+import sandbagDentSrc from "../assets/sandbag/sandbag-dent.png";
 
 type Props = {
   hitKey: number;
@@ -29,6 +31,7 @@ const catSwayByPower: Record<PunchPower, { rotate: number[]; duration: number }>
   heavy: { rotate: [0, -5, 4, -2.5, 1.2, 0], duration: 0.5 },
 };
 
+const DENT_DURATION_MS = 220;
 const DRAG_ROTATE_FACTOR = 0.32;
 const DRAG_ROTATE_MAX = 32;
 const DRAG_STRETCH_FACTOR = 0.0009;
@@ -55,10 +58,28 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
   const dragScaleY = useMotionValue(1);
   const dragActiveRef = useRef(false);
 
+  const [dented, setDented] = useState(false);
+  const dentTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (hitKey === 0 || kind === "crunch") return;
+    if (dentTimerRef.current !== null) {
+      window.clearTimeout(dentTimerRef.current);
+    }
+    setDented(true);
+    dentTimerRef.current = window.setTimeout(() => {
+      setDented(false);
+      dentTimerRef.current = null;
+    }, DENT_DURATION_MS);
+  }, [hitKey, kind]);
+
   useEffect(
     () => () => {
       dragRotate.stop();
       dragScaleY.stop();
+      if (dentTimerRef.current !== null) {
+        window.clearTimeout(dentTimerRef.current);
+      }
     },
     [dragRotate, dragScaleY],
   );
@@ -128,8 +149,6 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
     };
   }, [hitKey, kind, power, reduce, side, intensity]);
 
-  const eyesClosed = kind === "crunch";
-
   return (
     <motion.div
       className={`stage__sandbag-anchor${interactive ? " stage__sandbag-anchor--interactive" : ""}`}
@@ -160,55 +179,12 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
             className="stage__sandbag-drag"
             style={{ rotate: dragRotate, scaleY: dragScaleY, originY: 0 }}
           >
-            <svg
-              className="sandbag"
-              viewBox="0 0 120 200"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true"
-            >
-              <defs>
-                <linearGradient id="sandbagGradient" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#e35a37" />
-                  <stop offset="50%" stopColor="#c5392a" />
-                  <stop offset="100%" stopColor="#7a1d0c" />
-                </linearGradient>
-              </defs>
-              <path className="sandbag__chain" d="M50 6 L60 24" />
-              <path className="sandbag__chain" d="M70 6 L60 24" />
-              <rect className="sandbag__cap" x="40" y="22" width="40" height="14" rx="4" />
-              <path
-                className="sandbag__body-main"
-                d="M30 40 Q60 32 90 40 L92 156 Q60 168 28 156 Z"
-              />
-              <g className="sandbag__face">
-                <ellipse className="sandbag__cheek" cx="40" cy="66" rx="5" ry="3" />
-                <ellipse className="sandbag__cheek" cx="80" cy="66" rx="5" ry="3" />
-                {eyesClosed ? (
-                  <>
-                    <path className="sandbag__eye-line" d="M44 58 Q49 55 54 58" />
-                    <path className="sandbag__eye-line" d="M66 58 Q71 55 76 58" />
-                  </>
-                ) : (
-                  <>
-                    <circle className="sandbag__eye" cx="49" cy="58" r="3" />
-                    <circle className="sandbag__eye" cx="71" cy="58" r="3" />
-                    <circle className="sandbag__eye-shine" cx="48" cy="57" r="1" />
-                    <circle className="sandbag__eye-shine" cx="70" cy="57" r="1" />
-                  </>
-                )}
-                <path
-                  className="sandbag__mouth"
-                  d={eyesClosed ? "M55 70 Q60 73 65 70" : "M55 69 Q60 73 65 69"}
-                />
-              </g>
-              <rect className="sandbag__band" x="28" y="78" width="64" height="10" />
-              <rect className="sandbag__band" x="28" y="118" width="64" height="10" />
-              <path
-                className="sandbag__shine"
-                d="M40 46 Q44 100 42 150 Q38 100 38 50 Z"
-              />
-              <ellipse className="sandbag__cap" cx="60" cy="160" rx="32" ry="8" />
-            </svg>
+            <img
+              className={`sandbag-img${dented ? " sandbag-img--dent" : ""}`}
+              src={dented ? sandbagDentSrc : sandbagSrc}
+              alt=""
+              draggable={false}
+            />
           </motion.div>
         </motion.div>
       </motion.div>

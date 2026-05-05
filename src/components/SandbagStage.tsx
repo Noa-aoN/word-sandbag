@@ -8,6 +8,8 @@ import type {
   PunchKind,
   PunchPower,
 } from "../types/punch";
+import ringSrc from "../assets/sandbag/ring.png";
+import chainSrc from "../assets/sandbag/chain.png";
 
 type Props = {
   flyingWords: FlyingWordType[];
@@ -38,14 +40,14 @@ export function SandbagStage({
 }: Props) {
   return (
     <section className="stage" aria-label="サンドバッグの舞台">
-      <div className="ring" aria-hidden="true">
-        <span className="ring-rope ring-rope--top" />
-        <span className="ring-rope ring-rope--mid" />
-        <span className="ring-rope ring-rope--bot" />
-        <span className="ring-post ring-post--l" />
-        <span className="ring-post ring-post--r" />
-        <span className="ring-canvas" />
-      </div>
+      <img className="ring-bg" src={ringSrc} alt="" aria-hidden="true" draggable={false} />
+      <img
+        className="chain-mount"
+        src={chainSrc}
+        alt=""
+        aria-hidden="true"
+        draggable={false}
+      />
       <span className="stage__corner-tag" aria-hidden="true">
         受付中
       </span>

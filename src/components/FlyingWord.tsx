@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import type { FlyingWord as FlyingWordType, PunchKind, PunchPower } from "../types/punch";
+import pawLeftSrc from "../assets/sandbag/paw-left.png";
+import pawRightSrc from "../assets/sandbag/paw-right.png";
 
 type Props = {
   word: FlyingWordType;
@@ -192,6 +194,34 @@ export function FlyingWord({ word, onComplete, onCharImpact }: Props) {
         const endRotate = (pseudoRandom(seed + 350) - 0.5) * flight.endRotateRange;
         const charDelay = i * delay;
         const isLast = i === lastIndex;
+
+        if (word.kind === "cat") {
+          const pawSrc = side === -1 ? pawLeftSrc : pawRightSrc;
+          return (
+            <motion.img
+              key={i}
+              className={`flying-paw flying-paw--${side === -1 ? "left" : "right"}`}
+              src={pawSrc}
+              alt=""
+              draggable={false}
+              initial={{ opacity: 0, x: startX, y: startY, scale: 0.45, rotate: startRotate }}
+              animate={{
+                opacity: [0, 1, 1, 0],
+                x: [startX, startX * 0.55, midX, endX],
+                y: [startY, startY * 0.55, midY, endY],
+                scale: [0.45, 1, flight.scaleHit * 1.15, flight.scaleEnd],
+                rotate: [startRotate, startRotate * 0.4, 0, endRotate],
+              }}
+              transition={{
+                duration,
+                delay: charDelay,
+                ease: "easeOut",
+                times: flight.times,
+              }}
+              onAnimationComplete={isLast ? () => onComplete(word.id) : undefined}
+            />
+          );
+        }
 
         return (
           <motion.span
