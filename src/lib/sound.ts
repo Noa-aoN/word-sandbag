@@ -1,4 +1,5 @@
 import type { ImpactKind, PunchPower } from "../types/punch";
+import catMeowSrc from "../assets/sandbag/cat-meow.mp3";
 
 type AnyWindow = Window & {
   AudioContext?: typeof AudioContext;
@@ -8,6 +9,8 @@ type AnyWindow = Window & {
 let ctx: AudioContext | null = null;
 let masterGain: GainNode | null = null;
 let noiseBuf: AudioBuffer | null = null;
+let catMeowBuf: AudioBuffer | null = null;
+let catMeowLoading = false;
 
 function getCtx(): AudioContext | null {
   if (typeof window === "undefined") return null;
@@ -27,6 +30,21 @@ function ensureRunning(c: AudioContext) {
   if (c.state === "suspended") {
     c.resume().catch(() => {});
   }
+  loadCatMeow(c);
+}
+
+function loadCatMeow(c: AudioContext) {
+  if (catMeowBuf || catMeowLoading) return;
+  catMeowLoading = true;
+  fetch(catMeowSrc)
+    .then((r) => r.arrayBuffer())
+    .then((buf) => c.decodeAudioData(buf))
+    .then((decoded) => {
+      catMeowBuf = decoded;
+    })
+    .finally(() => {
+      catMeowLoading = false;
+    });
 }
 
 function getMaster(c: AudioContext): GainNode {
@@ -216,50 +234,25 @@ function meow() {
   const master = getMaster(c);
   const now = c.currentTime;
 
-  // Vocal source: sawtooth carries harmonics that pass through formant filters
-  const osc = c.createOscillator();
-  osc.type = "sawtooth";
-  // にゃーん contour: low → rise → dip → rise → fall
-  osc.frequency.setValueAtTime(420, now);
-  osc.frequency.linearRampToValueAtTime(720, now + 0.08);
-  osc.frequency.linearRampToValueAtTime(620, now + 0.18);
-  osc.frequency.linearRampToValueAtTime(760, now + 0.3);
-  osc.frequency.linearRampToValueAtTime(360, now + 0.46);
+  if (!catMeowBuf) return;
 
-  // Two formant bandpasses simulate vocal tract (vowel-like)
-  const f1 = c.createBiquadFilter();
-  f1.type = "bandpass";
-  f1.frequency.setValueAtTime(900, now);
-  f1.Q.setValueAtTime(4.5, now);
+  const node = c.createBufferSource();
+  node.buffer = catMeowBuf;
+  node.playbackRate.value = 0.94 + Math.random() * 0.16;
 
-  const f2 = c.createBiquadFilter();
-  f2.type = "bandpass";
-  f2.frequency.setValueAtTime(2400, now);
-  f2.Q.setValueAtTime(3, now);
+  const cap = Math.min(catMeowBuf.duration, 1.6);
+  const playDur = cap / node.playbackRate.value;
 
   const gain = c.createGain();
   gain.gain.setValueAtTime(0, now);
-  gain.gain.linearRampToValueAtTime(0.18, now + 0.04);
-  gain.gain.linearRampToValueAtTime(0.16, now + 0.32);
-  gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.55);
+  gain.gain.linearRampToValueAtTime(0.7, now + 0.012);
+  gain.gain.setValueAtTime(0.7, now + Math.max(0, playDur - 0.18));
+  gain.gain.exponentialRampToValueAtTime(0.0006, now + playDur);
 
-  osc.connect(f1);
-  f1.connect(f2);
-  f2.connect(gain);
+  node.connect(gain);
   gain.connect(master);
-  osc.start(now);
-  osc.stop(now + 0.58);
-
-  // Vibrato (~7Hz) on pitch for natural mew warble
-  const lfo = c.createOscillator();
-  const lfoGain = c.createGain();
-  lfo.type = "sine";
-  lfo.frequency.setValueAtTime(7, now);
-  lfoGain.gain.setValueAtTime(18, now);
-  lfo.connect(lfoGain);
-  lfoGain.connect(osc.frequency);
-  lfo.start(now);
-  lfo.stop(now + 0.58);
+  node.start(now, 0, cap);
+  node.stop(now + playDur + 0.05);
 }
 
 function softTone(
