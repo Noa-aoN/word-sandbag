@@ -20,9 +20,6 @@ export function Header() {
       <p className="header__catch">
         その言葉、<span className="header__catch-em">ここでぶつけて消そう。</span>
       </p>
-      <p className="header__sub">
-        誰にも送らない。どこにも残さない。思いの丈をサンドバッグへ。
-      </p>
     </header>
   );
 }
