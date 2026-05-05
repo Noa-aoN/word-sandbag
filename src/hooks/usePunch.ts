@@ -6,7 +6,7 @@ import type {
   PunchKind,
   PunchPower,
 } from "../types/punch";
-import { playErupt, playImpact, primeAudio } from "../lib/sound";
+import { playClank, playErupt, playImpact, primeAudio } from "../lib/sound";
 import { clampNumber, sanitizeInput } from "../lib/sanitize";
 
 const COMPLETE_MESSAGES = [
@@ -160,6 +160,7 @@ export function usePunch() {
       setBagState("active");
       setHitCount(0);
       setHitIntensity(INTENSITY_MIN);
+      if (soundOnRef.current) playClank();
     }, DEPART_DURATION_MS + MISSING_DURATION_MS);
     eruptTimersRef.current.push(t2);
 

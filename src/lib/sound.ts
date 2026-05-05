@@ -462,6 +462,87 @@ export function playErupt() {
   }
 }
 
+export function playClank() {
+  const c = getCtx();
+  if (!c) return;
+  ensureRunning(c);
+  const master = getMaster(c);
+  const now = c.currentTime;
+
+  // First strike: hard metallic hit (carabiner closes onto the hook)
+  {
+    const { node, offset } = noiseSourceWithOffset(c);
+    const bp = c.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.setValueAtTime(4200, now);
+    bp.Q.setValueAtTime(5, now);
+    const gain = c.createGain();
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.22, now + 0.002);
+    gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.09);
+    node.connect(bp);
+    bp.connect(gain);
+    gain.connect(master);
+    node.start(now, offset);
+    node.stop(now + 0.1);
+  }
+
+  // Tonal ring of the metal ring/chain link
+  const ringTones: Array<[number, number]> = [
+    [1480, 0.18],
+    [2360, 0.14],
+    [3120, 0.1],
+  ];
+  for (const [freq, vol] of ringTones) {
+    const osc = c.createOscillator();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(freq, now);
+    const gain = c.createGain();
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(vol, now + 0.004);
+    gain.gain.exponentialRampToValueAtTime(0.0006, now + 0.42);
+    osc.connect(gain);
+    gain.connect(master);
+    osc.start(now);
+    osc.stop(now + 0.45);
+  }
+
+  // Low body thunk (the bag's weight settling on the chain)
+  {
+    const osc = c.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(160, now);
+    osc.frequency.exponentialRampToValueAtTime(70, now + 0.18);
+    const gain = c.createGain();
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.18, now + 0.005);
+    gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.22);
+    osc.connect(gain);
+    gain.connect(master);
+    osc.start(now);
+    osc.stop(now + 0.25);
+  }
+
+  // Second tap a hair later (chain link settles)
+  const tapAt = now + 0.05;
+  {
+    const { node, offset } = noiseSourceWithOffset(c);
+    const bp = c.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.setValueAtTime(3200, tapAt);
+    bp.Q.setValueAtTime(3.5, tapAt);
+    const gain = c.createGain();
+    gain.gain.setValueAtTime(0, tapAt);
+    gain.gain.linearRampToValueAtTime(0.12, tapAt + 0.003);
+    gain.gain.exponentialRampToValueAtTime(0.0006, tapAt + 0.07);
+    node.connect(bp);
+    bp.connect(gain);
+    gain.connect(master);
+    node.start(tapAt, offset);
+    node.stop(tapAt + 0.08);
+  }
+}
+
 export function playImpact(kind: ImpactKind, power: PunchPower) {
   switch (kind) {
     case "cat":
