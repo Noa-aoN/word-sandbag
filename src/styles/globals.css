@@ -239,7 +239,7 @@ textarea {
 /* --- Stage ------------------------------------------------------------- */
 
 .stage {
-  --bag-h: clamp(280px, 70%, 460px);
+  --bag-h: clamp(340px, 86%, 520px);
   --bag-w: calc(var(--bag-h) * 320 / 971);
   position: relative;
   background:

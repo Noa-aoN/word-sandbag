@@ -34,9 +34,9 @@ const catSwayByPower: Record<PunchPower, { rotate: number[]; duration: number }>
 
 const DENT_LIFETIME_MS = 720;
 const POWER_DENT_SIZE: Record<PunchPower, number> = {
-  light: 0.3,
-  normal: 0.38,
-  heavy: 0.46,
+  light: 0.46,
+  normal: 0.58,
+  heavy: 0.72,
 };
 const DRAG_ROTATE_FACTOR = 0.32;
 const DRAG_ROTATE_MAX = 32;
@@ -50,15 +50,9 @@ function clamp(v: number, lo: number, hi: number): number {
 
 export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) {
   const reduce = useReducedMotion();
+  const anchorRef = useRef<HTMLDivElement>(null);
 
   const interactive = typeof onTap === "function";
-  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (!onTap) return;
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      onTap();
-    }
-  };
 
   const dragRotate = useMotionValue(0);
   const dragScaleY = useMotionValue(1);
@@ -70,19 +64,13 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
   const dentIdRef = useRef(0);
   const dentTimersRef = useRef<Set<number>>(new Set());
 
-  useEffect(() => {
-    if (hitKey === 0 || kind === "crunch") return;
+  const pushDent = (xPct: number, yPct: number, baseSize: number) => {
     dentIdRef.current += 1;
     const id = dentIdRef.current;
-    const sideShift = side === 0 ? 0 : side * 18;
-    const xJitter = (Math.random() - 0.5) * 6;
-    const yJitter = (Math.random() - 0.5) * 14;
-    const baseSize =
-      kind === "cat" ? 0.26 : kind === "tap" ? 0.28 : POWER_DENT_SIZE[power];
     const dent = {
       id,
-      xPct: 50 + sideShift + xJitter,
-      yPct: 56 + yJitter,
+      xPct,
+      yPct,
       sizePct: (baseSize + Math.random() * 0.06) * 100,
       rotate: (Math.random() - 0.5) * 70,
     };
@@ -92,6 +80,40 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
       dentTimersRef.current.delete(handle);
     }, DENT_LIFETIME_MS);
     dentTimersRef.current.add(handle);
+  };
+
+  const handleTapAt = (point: { x: number; y: number } | null) => {
+    if (!onTap) return;
+    let xPct = 50;
+    let yPct = 56;
+    const node = anchorRef.current;
+    if (point && node) {
+      const rect = node.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        xPct = Math.min(94, Math.max(6, ((point.x - rect.left) / rect.width) * 100));
+        yPct = Math.min(94, Math.max(6, ((point.y - rect.top) / rect.height) * 100));
+      }
+    }
+    pushDent(xPct, yPct, 0.4);
+    onTap();
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (!onTap) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleTapAt(null);
+    }
+  };
+
+  useEffect(() => {
+    if (hitKey === 0 || kind === "crunch" || kind === "tap") return;
+    const sideShift = side === 0 ? 0 : side * 18;
+    const xJitter = (Math.random() - 0.5) * 6;
+    const yJitter = (Math.random() - 0.5) * 14;
+    const baseSize = kind === "cat" ? 0.4 : POWER_DENT_SIZE[power];
+    pushDent(50 + sideShift + xJitter, 56 + yJitter, baseSize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hitKey, kind, power, side]);
 
   useEffect(
@@ -171,11 +193,12 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
 
   return (
     <motion.div
+      ref={anchorRef}
       className={`stage__sandbag-anchor${interactive ? " stage__sandbag-anchor--interactive" : ""}`}
       role={interactive ? "button" : undefined}
       aria-label={interactive ? "サンドバッグを叩いたり引っ張ったりする" : undefined}
       tabIndex={interactive ? 0 : undefined}
-      onTap={interactive ? () => onTap?.() : undefined}
+      onTap={interactive ? (_e, info) => handleTapAt(info.point) : undefined}
       onKeyDown={interactive ? handleKeyDown : undefined}
       onPanStart={interactive ? handlePanStart : undefined}
       onPan={interactive ? handlePan : undefined}
