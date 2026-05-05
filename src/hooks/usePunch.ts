@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { FlyingWord, ImpactKind, PunchKind, PunchPower } from "../types/punch";
+import type {
+  BagState,
+  FlyingWord,
+  ImpactKind,
+  PunchKind,
+  PunchPower,
+} from "../types/punch";
 import { playImpact, primeAudio } from "../lib/sound";
 import { clampNumber, sanitizeInput } from "../lib/sanitize";
 
@@ -36,6 +42,12 @@ const INTENSITY_MAX = 3.0;
 const INTENSITY_INC = 0.15;
 const INTENSITY_CRUNCH_DEC = 0.25;
 const INTENSITY_DECAY_MS = 1800;
+
+const BREAK_AT = 300;
+const DEPART_DURATION_MS = 1400;
+const MISSING_DURATION_MS = 1500;
+const RETURN_MESSAGE = "新しいの持ってきたよ。";
+const RETURN_MESSAGE_DURATION_MS = 2400;
 
 function classifyPower(text: string): PunchPower {
   const len = text.length;
@@ -88,12 +100,18 @@ export function usePunch() {
   const [message, setMessage] = useState("");
   const [speed, setSpeedState] = useState(SPEED_DEFAULT);
   const [soundOn, setSoundOn] = useState(true);
+  const [bagState, setBagState] = useState<BagState>("active");
 
   const messageTimerRef = useRef<number | null>(null);
   const messageDelayTimerRef = useRef<number | null>(null);
   const intensityDecayRef = useRef<number | null>(null);
+  const eruptTimersRef = useRef<number[]>([]);
   const soundOnRef = useRef(soundOn);
   soundOnRef.current = soundOn;
+  const bagStateRef = useRef(bagState);
+  bagStateRef.current = bagState;
+  const hitCountRef = useRef(hitCount);
+  hitCountRef.current = hitCount;
 
   useEffect(
     () => () => {
@@ -102,9 +120,59 @@ export function usePunch() {
         window.clearTimeout(messageDelayTimerRef.current);
       if (intensityDecayRef.current !== null)
         window.clearTimeout(intensityDecayRef.current);
+      for (const t of eruptTimersRef.current) window.clearTimeout(t);
+      eruptTimersRef.current = [];
     },
     [],
   );
+
+  // Trigger the bag-departure cinematic only when the threshold is crossed AND
+  // any in-flight word punch has fully resolved (flyingWords.length === 0).
+  // This satisfies the "finish the current word first" requirement.
+  useEffect(() => {
+    if (bagState !== "active") return;
+    if (hitCount < BREAK_AT) return;
+    if (flyingWords.length > 0) return;
+
+    setMessage("");
+    if (messageTimerRef.current !== null) {
+      window.clearTimeout(messageTimerRef.current);
+      messageTimerRef.current = null;
+    }
+    if (messageDelayTimerRef.current !== null) {
+      window.clearTimeout(messageDelayTimerRef.current);
+      messageDelayTimerRef.current = null;
+    }
+    if (intensityDecayRef.current !== null) {
+      window.clearTimeout(intensityDecayRef.current);
+      intensityDecayRef.current = null;
+    }
+
+    setBagState("departing");
+
+    const t1 = window.setTimeout(() => {
+      setBagState("missing");
+    }, DEPART_DURATION_MS);
+    eruptTimersRef.current.push(t1);
+
+    const t2 = window.setTimeout(() => {
+      setBagState("active");
+      setHitCount(0);
+      setHitIntensity(INTENSITY_MIN);
+    }, DEPART_DURATION_MS + MISSING_DURATION_MS);
+    eruptTimersRef.current.push(t2);
+
+    // Show the "new bag arrived" message once it's actually back on stage.
+    const t3 = window.setTimeout(() => {
+      setMessage(RETURN_MESSAGE);
+      if (messageTimerRef.current !== null) window.clearTimeout(messageTimerRef.current);
+      messageTimerRef.current = window.setTimeout(() => {
+        setMessage("");
+        messageTimerRef.current = null;
+      }, RETURN_MESSAGE_DURATION_MS);
+    }, DEPART_DURATION_MS + MISSING_DURATION_MS + 80);
+    eruptTimersRef.current.push(t3);
+  }, [bagState, hitCount, flyingWords.length]);
 
   const scheduleIntensityDecay = useCallback(() => {
     if (intensityDecayRef.current !== null) {
@@ -140,6 +208,8 @@ export function usePunch() {
 
   const dispatchPunch = useCallback(
     (content: string, kind: PunchKind = "punch", forcedSide?: -1 | 1) => {
+      if (bagStateRef.current !== "active") return;
+      if (hitCountRef.current >= BREAK_AT) return;
       const trimmed = sanitizeInput(content);
       if (trimmed.length === 0) return;
 
@@ -184,6 +254,7 @@ export function usePunch() {
   );
 
   const punch = useCallback(() => {
+    if (bagStateRef.current !== "active" || hitCountRef.current >= BREAK_AT) return;
     setText((current) => {
       dispatchPunch(current, "punch");
       return "";
@@ -191,6 +262,7 @@ export function usePunch() {
   }, [dispatchPunch]);
 
   const crunch = useCallback(() => {
+    if (bagStateRef.current !== "active" || hitCountRef.current >= BREAK_AT) return;
     setText((current) => {
       const trimmed = current.trim();
       if (trimmed.length > 0) {
@@ -221,12 +293,14 @@ export function usePunch() {
   );
 
   const catPunch = useCallback(() => {
+    if (bagStateRef.current !== "active" || hitCountRef.current >= BREAK_AT) return;
     const side: -1 | 1 = Math.random() < 0.5 ? -1 : 1;
     dispatchPunch(CAT_TEXT, "cat", side);
   }, [dispatchPunch]);
 
   const tap = useCallback(
     (side: number = 0) => {
+      if (bagStateRef.current !== "active" || hitCountRef.current >= BREAK_AT) return;
       setHitPower("light");
       setHitKind("tap");
       setHitSide(side);
@@ -242,6 +316,7 @@ export function usePunch() {
   );
 
   const hook = useCallback(() => {
+    if (bagStateRef.current !== "active" || hitCountRef.current >= BREAK_AT) return;
     const side = Math.random() < 0.5 ? -1 : 1;
     setHitPower("heavy");
     setHitKind("hook");
@@ -255,6 +330,7 @@ export function usePunch() {
   }, [scheduleIntensityDecay]);
 
   const upper = useCallback(() => {
+    if (bagStateRef.current !== "active" || hitCountRef.current >= BREAK_AT) return;
     setHitPower("heavy");
     setHitKind("upper");
     setHitSide(0);
@@ -308,6 +384,7 @@ export function usePunch() {
     message,
     speed,
     soundOn,
+    bagState,
     setSpeed,
     toggleSound,
     punch,

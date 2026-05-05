@@ -4,6 +4,7 @@ import { Sandbag } from "./Sandbag";
 import { FlyingWord } from "./FlyingWord";
 import { ImpactEffect } from "./ImpactEffect";
 import type {
+  BagState,
   FlyingWord as FlyingWordType,
   ImpactKind,
   PunchKind,
@@ -24,6 +25,7 @@ type Props = {
   hitIntensity: number;
   hitCount: number;
   message: string;
+  bagState: BagState;
 };
 
 export function SandbagStage({
@@ -38,6 +40,7 @@ export function SandbagStage({
   hitIntensity,
   hitCount,
   message,
+  bagState,
 }: Props) {
   const stageRef = useRef<HTMLElement>(null);
   const [tapPoint, setTapPoint] = useState<{ x: number; y: number } | null>(null);
@@ -84,6 +87,7 @@ export function SandbagStage({
         kind={hitKind}
         side={hitSide}
         intensity={hitIntensity}
+        bagState={bagState}
         onTap={handleTap}
       />
       <ImpactEffect

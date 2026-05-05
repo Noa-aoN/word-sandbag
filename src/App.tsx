@@ -18,6 +18,7 @@ export function App() {
     message,
     speed,
     soundOn,
+    bagState,
     setSpeed,
     toggleSound,
     punch,
@@ -48,6 +49,7 @@ export function App() {
           hitIntensity={hitIntensity}
           hitCount={hitCount}
           message={message}
+          bagState={bagState}
         />
         <InputPanel
           value={text}

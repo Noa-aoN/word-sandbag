@@ -4,6 +4,8 @@ export type PunchKind = "punch" | "cat" | "crunch" | "hook" | "upper";
 
 export type ImpactKind = PunchKind | "tap";
 
+export type BagState = "active" | "departing" | "missing";
+
 export type FlyingWord = {
   id: string;
   text: string;

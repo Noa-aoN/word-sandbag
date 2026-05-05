@@ -14,7 +14,7 @@ import {
   useReducedMotion,
   type PanInfo,
 } from "framer-motion";
-import type { ImpactKind, PunchPower } from "../types/punch";
+import type { BagState, ImpactKind, PunchPower } from "../types/punch";
 import sandbagSrc from "../assets/sandbag/sandbag.png";
 import dentMarkSrc from "../assets/sandbag/dent-mark.png";
 
@@ -24,6 +24,7 @@ type Props = {
   kind: ImpactKind;
   side: number;
   intensity: number;
+  bagState: BagState;
   onTap?: (side: number, clientPoint: { x: number; y: number } | null) => void;
 };
 
@@ -55,11 +56,19 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.min(hi, Math.max(lo, v));
 }
 
-export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) {
+export function Sandbag({
+  hitKey,
+  power,
+  kind,
+  side,
+  intensity,
+  bagState,
+  onTap,
+}: Props) {
   const reduce = useReducedMotion();
   const anchorRef = useRef<HTMLDivElement>(null);
 
-  const interactive = typeof onTap === "function";
+  const interactive = typeof onTap === "function" && bagState === "active";
 
   const dragRotate = useMotionValue(0);
   const dragScaleY = useMotionValue(1);
@@ -94,7 +103,7 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
   }, []);
 
   const handleTapAt = (point: { x: number; y: number } | null) => {
-    if (!onTap) return;
+    if (!onTap || bagState !== "active") return;
     let xPct = 50;
     let yPct = 56;
     let tapSide = 0;
@@ -183,6 +192,28 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
     animate(dragRotate, 0, DRAG_SPRING);
     animate(dragScaleY, 1, DRAG_SPRING);
   };
+
+  const anchorAnimate = useMemo(() => {
+    switch (bagState) {
+      case "departing":
+        return { x: 560, y: -600, rotate: 720, scale: 0.32, opacity: 0 };
+      case "missing":
+        return { x: 0, y: -260, rotate: 0, scale: 0.85, opacity: 0 };
+      default:
+        return { x: 0, y: 0, rotate: 0, scale: 1, opacity: 1 };
+    }
+  }, [bagState]);
+
+  const anchorTransition = useMemo(() => {
+    switch (bagState) {
+      case "departing":
+        return { duration: 1.4, ease: "easeIn" as const };
+      case "missing":
+        return { duration: 0 };
+      default:
+        return { type: "spring" as const, stiffness: 220, damping: 14, duration: 0.7 };
+    }
+  }, [bagState]);
 
   const idleAnimate = reduce ? { rotate: 0 } : { rotate: [0, 2, -2, 0] };
   const idleTransition = reduce
@@ -303,6 +334,8 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
       onPanStart={interactive ? handlePanStart : undefined}
       onPan={interactive ? handlePan : undefined}
       onPanEnd={interactive ? handlePanEnd : undefined}
+      animate={anchorAnimate}
+      transition={anchorTransition}
       style={{ touchAction: "none", perspective: "900px" }}
     >
       <motion.div
