@@ -292,26 +292,24 @@ function hugChord() {
   const master = getMaster(c);
   const now = c.currentTime;
 
-  // Soft lowpass keeps overtones gentle. Lower cutoff than before for a more
-  // pillowy timbre; bus gain slightly attenuated for overall softness.
+  // Heavier lowpass + gentler bus for a hazier, pillowy chord
   const bus = c.createGain();
-  bus.gain.value = 0.85;
+  bus.gain.value = 0.6;
   const lp = c.createBiquadFilter();
   lp.type = "lowpass";
-  lp.frequency.setValueAtTime(1400, now);
-  lp.Q.setValueAtTime(0.6, now);
+  lp.frequency.setValueAtTime(900, now);
+  lp.Q.setValueAtTime(0.5, now);
   bus.connect(lp);
   lp.connect(master);
 
-  // Slow-blooming pad: longer attacks, lower volumes, sparkle removed
-  softTone(c, bus, "sine", 196.0, 0.06, now, 0.45, 1.6); // G3 sub
-  softTone(c, bus, "sine", 392.0, 0.075, now, 0.42, 1.6); // G4 root
-  softTone(c, bus, "sine", 493.88, 0.05, now + 0.12, 0.46, 1.4); // B4 third
-  softTone(c, bus, "sine", 587.33, 0.04, now + 0.2, 0.48, 1.2); // D5 fifth
-  softTone(c, bus, "sine", 783.99, 0.022, now + 0.32, 0.5, 1.0); // G5 octave (subtle)
+  // Slow-blooming pad with longer attacks and lower volumes
+  softTone(c, bus, "sine", 196.0, 0.04, now, 0.7, 2.0); // G3 sub
+  softTone(c, bus, "sine", 392.0, 0.05, now, 0.65, 2.0); // G4 root
+  softTone(c, bus, "sine", 493.88, 0.035, now + 0.18, 0.7, 1.7); // B4 third
+  softTone(c, bus, "sine", 587.33, 0.025, now + 0.3, 0.7, 1.5); // D5 fifth
 
   // Warm triangle breath under the chord
-  softTone(c, bus, "triangle", 98.0, 0.035, now, 0.5, 1.5); // G2 deep
+  softTone(c, bus, "triangle", 98.0, 0.022, now, 0.75, 1.9); // G2 deep
 }
 
 function hookSwing() {
