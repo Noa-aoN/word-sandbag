@@ -239,7 +239,8 @@ textarea {
 /* --- Stage ------------------------------------------------------------- */
 
 .stage {
-  --bag-size: clamp(220px, 50%, 380px);
+  --bag-h: clamp(280px, 70%, 460px);
+  --bag-w: calc(var(--bag-h) * 320 / 971);
   position: relative;
   background:
     radial-gradient(
@@ -344,10 +345,10 @@ textarea {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: var(--bag-size);
-  height: var(--bag-size);
-  margin-top: calc(var(--bag-size) / -2);
-  margin-left: calc(var(--bag-size) / -2);
+  width: var(--bag-w);
+  height: var(--bag-h);
+  margin-top: calc(var(--bag-h) / -2);
+  margin-left: calc(var(--bag-w) / -2);
   z-index: 3;
   border-radius: 18px;
   -webkit-tap-highlight-color: transparent;
