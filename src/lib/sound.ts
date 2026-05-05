@@ -179,56 +179,34 @@ function playToneLayer(
   osc.stop(now + dur + 0.02);
 }
 
+function thumpInto(
+  c: AudioContext,
+  master: GainNode,
+  now: number,
+  cfg: PunchProfile,
+) {
+  playToneLayer(c, master, now, "sine", cfg.bodyFreqStart, cfg.bodyFreqEnd, cfg.bodyVol, 0.006, cfg.bodyDur);
+  playToneLayer(c, master, now, "sine", cfg.subFreqStart, cfg.subFreqEnd, cfg.subVol, 0.012, cfg.subDur);
+
+  const bp = c.createBiquadFilter();
+  bp.type = "bandpass";
+  bp.frequency.setValueAtTime(cfg.slapBP, now);
+  bp.Q.setValueAtTime(cfg.slapBPQ, now);
+  playNoiseLayer(c, master, now, bp, cfg.slapVol, 0.003, cfg.slapDur);
+
+  const hp = c.createBiquadFilter();
+  hp.type = "highpass";
+  hp.frequency.setValueAtTime(3500, now);
+  playNoiseLayer(c, master, now, hp, cfg.clickVol, 0.001, cfg.clickDur);
+}
+
 function thump(power: PunchPower) {
   const c = getCtx();
   if (!c) return;
   ensureRunning(c);
   const master = getMaster(c);
   const now = c.currentTime;
-  const cfg = PUNCH_PROFILE[power];
-
-  // Body: kick-drum style sine drop — gives the "thud" weight
-  playToneLayer(
-    c,
-    master,
-    now,
-    "sine",
-    cfg.bodyFreqStart,
-    cfg.bodyFreqEnd,
-    cfg.bodyVol,
-    0.006,
-    cfg.bodyDur,
-  );
-
-  // Sub-bass: very low sine for chest-impact feel
-  playToneLayer(
-    c,
-    master,
-    now,
-    "sine",
-    cfg.subFreqStart,
-    cfg.subFreqEnd,
-    cfg.subVol,
-    0.012,
-    cfg.subDur,
-  );
-
-  // Leather slap: filtered noise burst
-  {
-    const bp = c.createBiquadFilter();
-    bp.type = "bandpass";
-    bp.frequency.setValueAtTime(cfg.slapBP, now);
-    bp.Q.setValueAtTime(cfg.slapBPQ, now);
-    playNoiseLayer(c, master, now, bp, cfg.slapVol, 0.003, cfg.slapDur);
-  }
-
-  // Sharp click: highpassed noise transient (glove leather snap)
-  {
-    const hp = c.createBiquadFilter();
-    hp.type = "highpass";
-    hp.frequency.setValueAtTime(3500, now);
-    playNoiseLayer(c, master, now, hp, cfg.clickVol, 0.001, cfg.clickDur);
-  }
+  thumpInto(c, master, now, PUNCH_PROFILE[power]);
 }
 
 function meow() {
@@ -284,6 +262,72 @@ function hum() {
   osc.stop(now + 0.6);
 }
 
+function hookSwing() {
+  const c = getCtx();
+  if (!c) return;
+  ensureRunning(c);
+  const master = getMaster(c);
+  const now = c.currentTime;
+
+  thumpInto(c, master, now, {
+    bodyFreqStart: 120,
+    bodyFreqEnd: 42,
+    bodyDur: 0.28,
+    bodyVol: 0.34,
+    subFreqStart: 50,
+    subFreqEnd: 28,
+    subDur: 0.22,
+    subVol: 0.22,
+    slapBP: 1300,
+    slapBPQ: 1.7,
+    slapDur: 0.07,
+    slapVol: 0.2,
+    clickVol: 0.06,
+    clickDur: 0.014,
+  });
+
+  const swoosh = noiseSourceWithOffset(c);
+  const bp = c.createBiquadFilter();
+  bp.type = "bandpass";
+  bp.frequency.setValueAtTime(2400, now);
+  bp.frequency.exponentialRampToValueAtTime(900, now + 0.1);
+  bp.Q.setValueAtTime(1.2, now);
+  const gain = c.createGain();
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(0.08, now + 0.005);
+  gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.11);
+  swoosh.node.connect(bp);
+  bp.connect(gain);
+  gain.connect(master);
+  swoosh.node.start(now, swoosh.offset);
+  swoosh.node.stop(now + 0.13);
+}
+
+function upperLift() {
+  const c = getCtx();
+  if (!c) return;
+  ensureRunning(c);
+  const master = getMaster(c);
+  const now = c.currentTime;
+
+  thumpInto(c, master, now, {
+    bodyFreqStart: 80,
+    bodyFreqEnd: 32,
+    bodyDur: 0.34,
+    bodyVol: 0.36,
+    subFreqStart: 38,
+    subFreqEnd: 22,
+    subDur: 0.28,
+    subVol: 0.26,
+    slapBP: 900,
+    slapBPQ: 1.4,
+    slapDur: 0.05,
+    slapVol: 0.14,
+    clickVol: 0.05,
+    clickDur: 0.012,
+  });
+}
+
 export function playImpact(kind: ImpactKind, power: PunchPower) {
   switch (kind) {
     case "cat":
@@ -294,6 +338,12 @@ export function playImpact(kind: ImpactKind, power: PunchPower) {
       return;
     case "tap":
       thump("light");
+      return;
+    case "hook":
+      hookSwing();
+      return;
+    case "upper":
+      upperLift();
       return;
     case "punch":
     default:

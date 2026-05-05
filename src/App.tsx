@@ -24,6 +24,8 @@ export function App() {
     punchWith,
     crunch,
     catPunch,
+    hook,
+    upper,
     tap,
     charImpact,
     removeWord,
@@ -52,6 +54,8 @@ export function App() {
           onChange={setText}
           onPunch={punch}
           onCrunch={crunch}
+          onHook={hook}
+          onUpper={upper}
           onQuickPunch={punchWith}
           onCatPunch={catPunch}
           speed={speed}
@@ -61,6 +65,12 @@ export function App() {
           onToggleSound={toggleSound}
         />
         <PrivacyNote />
+        <footer className="app-footer">
+          <span className="app-footer__mono" aria-hidden="true">
+            HERE &amp; GONE
+          </span>
+          <span className="app-footer__text">送らない。残さない。ここで消す。</span>
+        </footer>
       </div>
     </div>
   );

@@ -17,7 +17,7 @@ type Props = {
   kind: ImpactKind;
   side: number;
   intensity: number;
-  onTap?: () => void;
+  onTap?: (side: number, clientPoint: { x: number; y: number } | null) => void;
 };
 
 const punchSwayByPower: Record<PunchPower, { rotate: number[]; duration: number }> = {
@@ -86,16 +86,18 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
     if (!onTap) return;
     let xPct = 50;
     let yPct = 56;
+    let tapSide = 0;
     const node = anchorRef.current;
     if (point && node) {
       const rect = node.getBoundingClientRect();
       if (rect.width > 0 && rect.height > 0) {
         xPct = Math.min(94, Math.max(6, ((point.x - rect.left) / rect.width) * 100));
         yPct = Math.min(94, Math.max(6, ((point.y - rect.top) / rect.height) * 100));
+        tapSide = xPct < 36 ? -1 : xPct > 64 ? 1 : 0;
       }
     }
     pushDent(xPct, yPct, 0.4);
-    onTap();
+    onTap(tapSide, point);
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -111,8 +113,16 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
     const sideShift = side === 0 ? 0 : side * 18;
     const xJitter = (Math.random() - 0.5) * 6;
     const yJitter = (Math.random() - 0.5) * 14;
-    const baseSize = kind === "cat" ? 0.4 : POWER_DENT_SIZE[power];
-    pushDent(50 + sideShift + xJitter, 56 + yJitter, baseSize);
+    const baseSize =
+      kind === "cat"
+        ? 0.4
+        : kind === "hook"
+          ? 0.78
+          : kind === "upper"
+            ? 0.6
+            : POWER_DENT_SIZE[power];
+    const yPos = kind === "upper" ? 78 : 56;
+    pushDent(50 + sideShift + xJitter, yPos + yJitter, baseSize);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hitKey, kind, power, side]);
 
@@ -178,10 +188,52 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
         hitTransition: { duration: 0.55, ease: "easeOut" as const },
       };
     }
-    const base = kind === "cat" ? catSwayByPower[power] : punchSwayByPower[power];
-    const flip = side === -1 ? -1 : 1;
+
     const amp = Math.min(3, Math.max(0.9, intensity));
     const durMul = Math.min(1.4, 0.85 + amp * 0.15);
+
+    if (kind === "upper") {
+      // Hit from below at center: vertical compression + brief forward bow.
+      // ScaleY squeezes (bag absorbs), ScaleX bulges, rotate slight forward.
+      return {
+        hitAnimate: {
+          scaleY: [1, 0.86 - amp * 0.02, 1.07 + amp * 0.01, 0.96, 1],
+          scaleX: [1, 1.07 + amp * 0.02, 0.94, 1.02, 1],
+          rotate: [0, -2 * amp, 1.5 * amp, -0.6 * amp, 0],
+        },
+        hitTransition: { duration: 0.7 * durMul, ease: "easeOut" as const },
+      };
+    }
+
+    if (kind === "hook") {
+      const swayBase = punchSwayByPower.heavy;
+      const flip = side === -1 ? -1 : 1;
+      return {
+        hitAnimate: {
+          rotate: swayBase.rotate.map((v) => v * flip * amp * 1.25),
+          scaleY: [1, 0.97, 1.02, 0.99, 1],
+          scaleX: [1, 1.03, 0.98, 1.01, 1],
+        },
+        hitTransition: { duration: swayBase.duration * durMul * 1.1, ease: "easeOut" as const },
+      };
+    }
+
+    // punch / cat / tap
+    if (side === 0) {
+      // Center hit: vertical compression rather than horizontal swing.
+      const sBase = kind === "cat" ? 0.55 : 1;
+      return {
+        hitAnimate: {
+          scaleY: [1, 0.93 - amp * 0.02 * sBase, 1.05 + amp * 0.01 * sBase, 0.97, 1],
+          scaleX: [1, 1.05 + amp * 0.02 * sBase, 0.96, 1.02, 1],
+          rotate: 0,
+        },
+        hitTransition: { duration: 0.55 * durMul, ease: "easeOut" as const },
+      };
+    }
+
+    const base = kind === "cat" ? catSwayByPower[power] : punchSwayByPower[power];
+    const flip = side === -1 ? -1 : 1;
     return {
       hitAnimate: {
         rotate: base.rotate.map((v) => v * flip * amp),
@@ -198,7 +250,7 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
       role={interactive ? "button" : undefined}
       aria-label={interactive ? "サンドバッグを叩いたり引っ張ったりする" : undefined}
       tabIndex={interactive ? 0 : undefined}
-      onTap={interactive ? (_e, info) => handleTapAt(info.point) : undefined}
+      onTap={interactive ? (_e, info) => handleTapAt(info.point ?? null) : undefined}
       onKeyDown={interactive ? handleKeyDown : undefined}
       onPanStart={interactive ? handlePanStart : undefined}
       onPan={interactive ? handlePan : undefined}

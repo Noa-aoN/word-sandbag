@@ -226,16 +226,46 @@ export function usePunch() {
     dispatchPunch(CAT_TEXT, "cat");
   }, [dispatchPunch]);
 
-  const tap = useCallback(() => {
-    setHitPower("light");
-    setHitKind("tap");
+  const tap = useCallback(
+    (side: number = 0) => {
+      setHitPower("light");
+      setHitKind("tap");
+      setHitSide(side);
+      setHitCount((c) => c + 1);
+      setHitKey((k) => k + 1);
+      setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 0.6));
+      scheduleIntensityDecay();
+      showMessage(pickRandom(TAP_MESSAGES) ?? "", TAP_MESSAGE_DURATION_MS);
+      if (soundOnRef.current) playImpact("tap", "light");
+      vibrate("light");
+    },
+    [showMessage, scheduleIntensityDecay],
+  );
+
+  const hook = useCallback(() => {
+    const side = Math.random() < 0.5 ? -1 : 1;
+    setHitPower("heavy");
+    setHitKind("hook");
+    setHitSide(side);
+    setHitCount((c) => c + 1);
+    setHitKey((k) => k + 1);
+    setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 1.6));
+    scheduleIntensityDecay();
+    if (soundOnRef.current) playImpact("hook", "heavy");
+    vibrate("heavy");
+  }, [scheduleIntensityDecay]);
+
+  const upper = useCallback(() => {
+    setHitPower("heavy");
+    setHitKind("upper");
     setHitSide(0);
     setHitCount((c) => c + 1);
     setHitKey((k) => k + 1);
-    showMessage(pickRandom(TAP_MESSAGES) ?? "", TAP_MESSAGE_DURATION_MS);
-    if (soundOnRef.current) playImpact("tap", "light");
-    vibrate("light");
-  }, [showMessage]);
+    setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 1.4));
+    scheduleIntensityDecay();
+    if (soundOnRef.current) playImpact("upper", "heavy");
+    vibrate("heavy");
+  }, [scheduleIntensityDecay]);
 
   const charImpact = useCallback(
     (power: PunchPower, kind: PunchKind, side: number) => {
@@ -285,6 +315,8 @@ export function usePunch() {
     punchWith,
     crunch,
     catPunch,
+    hook,
+    upper,
     tap,
     charImpact,
     removeWord,

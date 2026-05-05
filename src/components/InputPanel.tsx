@@ -5,6 +5,8 @@ type Props = {
   onChange: (value: string) => void;
   onPunch: () => void;
   onCrunch: () => void;
+  onHook: () => void;
+  onUpper: () => void;
   onQuickPunch: (text: string) => void;
   onCatPunch: () => void;
   speed: number;
@@ -38,6 +40,8 @@ export function InputPanel({
   onChange,
   onPunch,
   onCrunch,
+  onHook,
+  onUpper,
   onQuickPunch,
   onCatPunch,
   speed,
@@ -62,6 +66,7 @@ export function InputPanel({
 
   return (
     <section className="input-panel" aria-label="入力エリア">
+      {/* 1. 速度 / 効果音 */}
       <div className="settings-row">
         <div className="speed-control">
           <span className="speed-control__label">パンチ速度</span>
@@ -93,6 +98,31 @@ export function InputPanel({
         </button>
       </div>
 
+      {/* 2. プリセット */}
+      <div className="quick-punches">
+        <div className="quick-punches__head">
+          <span className="quick-punches__label">サクッとパンチ</span>
+          <span className="quick-punches__tag" aria-hidden="true">
+            PRESET
+          </span>
+        </div>
+        <div className="quick-punches__row" role="group" aria-label="プリセットのパンチ">
+          {QUICK_PRESETS.map((preset, i) => (
+            <button
+              key={preset}
+              type="button"
+              className="quick-punch-button"
+              onClick={() => onQuickPunch(preset)}
+              aria-label={`「${preset}」とパンチする`}
+              style={{ animationDelay: `${0.06 * i}s` }}
+            >
+              {preset}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 3. 文字入力 */}
       <div className="input-panel__textarea-wrap">
         <textarea
           ref={ref}
@@ -122,19 +152,40 @@ export function InputPanel({
 
       <p className="input-panel__hint">Enterでパンチ。Shift+Enterで改行。</p>
 
-      <div className="action-row">
+      {/* 4. 言葉パンチ */}
+      <div className="action-row action-row--main">
         <button
           type="button"
           className="punch-button"
           onClick={onPunch}
           disabled={!canDispatch}
-          aria-label="パンチする"
+          aria-label="言葉パンチする"
         >
-          パンチする
+          言葉パンチする
+        </button>
+      </div>
+
+      {/* 5. フック / アッパー / クランチ */}
+      <div className="action-row action-row--variant">
+        <button
+          type="button"
+          className="variant-button variant-button--hook"
+          onClick={onHook}
+          aria-label="フックを放つ"
+        >
+          フックする
         </button>
         <button
           type="button"
-          className="crunch-button"
+          className="variant-button variant-button--upper"
+          onClick={onUpper}
+          aria-label="アッパーを放つ"
+        >
+          アッパーする
+        </button>
+        <button
+          type="button"
+          className="variant-button variant-button--crunch"
           onClick={onCrunch}
           aria-label="やさしくクランチする"
         >
@@ -142,32 +193,20 @@ export function InputPanel({
         </button>
       </div>
 
-      <div className="quick-punches">
-        <div className="quick-punches__head">
-          <span className="quick-punches__label">サクッとパンチ</span>
-          <span className="quick-punches__tag" aria-hidden="true">
-            PRESET
+      {/* 6. 特殊パンチ */}
+      <div className="special-punches">
+        <div className="special-punches__head">
+          <span className="special-punches__label">特殊パンチ</span>
+          <span className="special-punches__tag" aria-hidden="true">
+            SPECIAL
           </span>
         </div>
-        <div className="quick-punches__row" role="group" aria-label="プリセットのパンチ">
-          {QUICK_PRESETS.map((preset, i) => (
-            <button
-              key={preset}
-              type="button"
-              className="quick-punch-button"
-              onClick={() => onQuickPunch(preset)}
-              aria-label={`「${preset}」とパンチする`}
-              style={{ animationDelay: `${0.06 * i}s` }}
-            >
-              {preset}
-            </button>
-          ))}
+        <div className="special-punches__row" role="group" aria-label="特殊パンチ">
           <button
             type="button"
             className="quick-punch-button quick-punch-button--cat"
             onClick={onCatPunch}
             aria-label="猫パンチを放つ"
-            style={{ animationDelay: `${0.06 * QUICK_PRESETS.length}s` }}
           >
             {CAT_LABEL}
           </button>

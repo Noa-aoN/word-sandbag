@@ -854,16 +854,29 @@ textarea {
   outline-offset: 4px;
 }
 
-.crunch-button {
+.action-row--main .punch-button {
+  flex: 1 1 100%;
+  font-size: 1.1rem;
+  padding: 14px 22px;
+  letter-spacing: 0.2em;
+}
+
+.action-row--variant {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.variant-button {
+  flex: 1 1 28%;
+  min-width: 110px;
   font-family: var(--font-display);
   border: 2px solid var(--ink);
   border-radius: var(--radius-md);
-  background: linear-gradient(180deg, #ffd9b8, #f4ad7c);
-  color: var(--vermilion-deep);
   font-weight: 400;
-  font-size: 1rem;
-  letter-spacing: 0.16em;
-  padding: 12px 18px;
+  font-size: 0.92rem;
+  letter-spacing: 0.12em;
+  padding: 10px 12px;
   box-shadow: var(--shadow-stamp);
   transform: translate(0, 0);
   transition:
@@ -873,25 +886,33 @@ textarea {
   white-space: nowrap;
 }
 
-.crunch-button:hover:not(:disabled) {
-  filter: brightness(1.04);
+.variant-button:hover {
+  filter: brightness(1.05);
 }
 
-.crunch-button:active:not(:disabled) {
+.variant-button:active {
   transform: translate(2px, 2px);
   box-shadow: 2px 2px 0 var(--ink);
 }
 
-.crunch-button:disabled {
-  background: linear-gradient(180deg, #f0d8c2, #d6b59a);
-  color: rgba(122, 60, 30, 0.65);
-  cursor: not-allowed;
-  filter: saturate(0.6);
+.variant-button:focus-visible {
+  outline: 3px solid var(--vermilion-deep);
+  outline-offset: 3px;
 }
 
-.crunch-button:focus-visible {
-  outline: 3px solid var(--vermilion-deep);
-  outline-offset: 4px;
+.variant-button--hook {
+  background: linear-gradient(180deg, #ffc46a, #d98b25);
+  color: #4a2710;
+}
+
+.variant-button--upper {
+  background: linear-gradient(180deg, #ffd0a8, #d97a2a);
+  color: #4a2710;
+}
+
+.variant-button--crunch {
+  background: linear-gradient(180deg, #ffd9b8, #f4ad7c);
+  color: var(--vermilion-deep);
 }
 
 /* --- Quick punches ----------------------------------------------------- */
@@ -979,6 +1000,8 @@ textarea {
   background: var(--paper-glow);
   color: var(--vermilion-deep);
   box-shadow: 3px 3px 0 var(--ink);
+  font-size: 0.96rem;
+  padding: 8px 16px;
 }
 
 .quick-punch-button--cat:hover {
@@ -989,6 +1012,71 @@ textarea {
 
 .quick-punch-button--cat:active {
   box-shadow: 1px 1px 0 var(--ink);
+}
+
+.special-punches {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--ink-soft);
+  z-index: 1;
+}
+
+.special-punches__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.special-punches__label {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.special-punches__tag {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.32em;
+  color: var(--vermilion);
+  border: 1px solid currentColor;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.special-punches__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.app-footer {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  color: var(--ink-mute);
+}
+
+.app-footer__mono {
+  color: var(--vermilion);
+  letter-spacing: 0.32em;
+  font-weight: 700;
+}
+
+.app-footer__text {
+  font-family: var(--font-body);
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-mute);
+  font-weight: 600;
 }
 
 /* --- Privacy + footer -------------------------------------------------- */

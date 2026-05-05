@@ -1,6 +1,6 @@
 export type PunchPower = "light" | "normal" | "heavy";
 
-export type PunchKind = "punch" | "cat" | "crunch";
+export type PunchKind = "punch" | "cat" | "crunch" | "hook" | "upper";
 
 export type ImpactKind = PunchKind | "tap";
 

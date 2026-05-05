@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import type { ImpactKind, PunchPower } from "../types/punch";
 import burstSrc from "../assets/sandbag/burst.png";
@@ -7,6 +8,7 @@ type Props = {
   power: PunchPower;
   kind: ImpactKind;
   side: number;
+  point: { x: number; y: number } | null;
 };
 
 const PUNCH_LABEL: Record<PunchPower, string> = {
@@ -25,19 +27,26 @@ function labelFor(kind: ImpactKind, power: PunchPower): string {
   if (kind === "cat") return "にゃっ";
   if (kind === "crunch") return "ぎゅっ";
   if (kind === "tap") return "ポン";
+  if (kind === "hook") return "ガッ";
+  if (kind === "upper") return "ドカッ";
   return PUNCH_LABEL[power];
 }
 
-export function ImpactEffect({ hitKey, power, kind, side }: Props) {
+export function ImpactEffect({ hitKey, power, kind, side, point }: Props) {
   const reduce = useReducedMotion();
   if (hitKey === 0) return null;
 
   const scale = sizeByPower[power];
   const showBurst = !reduce && kind !== "crunch";
-  const offsetPx = (kind === "punch" || kind === "cat") ? side * 30 : 0;
-  const wrapStyle = {
-    transform: `translate(calc(-50% + ${offsetPx}px), -50%)`,
-  };
+  const useTapPos = kind === "tap" && point !== null;
+  const offsetPx = !useTapPos && (kind === "punch" || kind === "cat" || kind === "hook") ? side * 30 : 0;
+  const wrapStyle: CSSProperties = useTapPos && point
+    ? {
+        top: `${point.y}px`,
+        left: `${point.x}px`,
+        transform: "translate(-50%, -50%)",
+      }
+    : { transform: `translate(calc(-50% + ${offsetPx}px), -50%)` };
 
   return (
     <div className={`impact-wrap impact-wrap--${kind}`} style={wrapStyle} aria-hidden="true">
