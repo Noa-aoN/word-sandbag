@@ -41,7 +41,9 @@ const catSwayByPower: Record<PunchPower, { rotate: number[]; duration: number }>
   heavy: { rotate: [0, -5, 4, -2.5, 1.2, 0], duration: 0.5 },
 };
 
-const DENT_LIFETIME_MS = 720;
+const DENT_HOLD_MS = 480;
+const DENT_FADE_IN_S = 0.14;
+const DENT_FADE_OUT_S = 0.32;
 const POWER_DENT_SIZE: Record<PunchPower, number> = {
   light: 0.46,
   normal: 0.58,
@@ -99,7 +101,7 @@ export function Sandbag({
     const handle = window.setTimeout(() => {
       setDents((prev) => prev.filter((d) => d.id !== id));
       dentTimersRef.current.delete(handle);
-    }, DENT_LIFETIME_MS);
+    }, DENT_HOLD_MS);
     dentTimersRef.current.add(handle);
   }, []);
 
@@ -366,19 +368,15 @@ export function Sandbag({
                     width: `${d.sizePct}%`,
                   }}
                   initial={{ opacity: 0, scale: 0.4, rotate: d.rotate, x: "-50%", y: "-50%" }}
-                  animate={{
-                    opacity: [0, 1, 1, 0],
-                    scale: [0.4, 1, 1, 0.95],
-                    rotate: d.rotate,
+                  animate={{ opacity: 1, scale: 1, rotate: d.rotate, x: "-50%", y: "-50%" }}
+                  exit={{
+                    opacity: 0,
+                    scale: 0.95,
                     x: "-50%",
                     y: "-50%",
+                    transition: { duration: DENT_FADE_OUT_S, ease: "easeIn" },
                   }}
-                  exit={{ opacity: 0, scale: 0.95, x: "-50%", y: "-50%" }}
-                  transition={{
-                    duration: DENT_LIFETIME_MS / 1000,
-                    times: [0, 0.12, 0.55, 1],
-                    ease: "easeOut",
-                  }}
+                  transition={{ duration: DENT_FADE_IN_S, ease: "easeOut" }}
                 />
               ))}
             </AnimatePresence>
