@@ -120,7 +120,7 @@ textarea {
 
 .app__inner {
   width: 100%;
-  max-width: 760px;
+  max-width: 880px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -239,7 +239,7 @@ textarea {
 /* --- Stage ------------------------------------------------------------- */
 
 .stage {
-  --bag-h: clamp(340px, 86%, 520px);
+  --bag-h: clamp(340px, 86%, 580px);
   --bag-w: calc(var(--bag-h) * 320 / 971);
   position: relative;
   background:
@@ -253,7 +253,7 @@ textarea {
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
   padding: 24px 24px;
-  height: clamp(380px, 56vh, 540px);
+  height: clamp(380px, 58vh, 600px);
   overflow: hidden;
   isolation: isolate;
 }
@@ -1291,7 +1291,7 @@ textarea {
     padding-top: 44px;
   }
   .stage {
-    height: 560px;
+    height: 620px;
   }
   .stage__seal {
     width: 72px;
