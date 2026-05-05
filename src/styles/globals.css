@@ -278,7 +278,7 @@ textarea {
   left: 50%;
   transform: translateX(-50%);
   width: 64px;
-  height: calc(50% - var(--bag-h) / 2 + 18px);
+  height: calc(50% - var(--bag-h) / 2 - 8px);
   min-height: 28px;
   object-fit: cover;
   object-position: top center;
