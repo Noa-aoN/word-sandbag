@@ -259,17 +259,14 @@ textarea {
 .ring-bg {
   position: absolute;
   left: 50%;
-  bottom: 0;
+  bottom: -2px;
   transform: translateX(-50%);
-  width: 112%;
-  max-height: 78%;
+  width: 144%;
   height: auto;
-  object-fit: contain;
-  object-position: bottom center;
   z-index: 1;
   pointer-events: none;
   user-select: none;
-  filter: drop-shadow(0 12px 18px rgba(40, 26, 12, 0.28));
+  filter: drop-shadow(0 14px 18px rgba(40, 26, 12, 0.32));
 }
 
 .chain-mount {
@@ -362,12 +359,12 @@ textarea {
 
 .stage__sandbag-anchor {
   position: absolute;
-  top: 38%;
+  top: 36%;
   left: 50%;
-  margin-top: -120px;
-  margin-left: -78px;
-  width: 156px;
-  height: 240px;
+  margin-top: -150px;
+  margin-left: -100px;
+  width: 200px;
+  height: 300px;
   z-index: 3;
   border-radius: 18px;
   -webkit-tap-highlight-color: transparent;
@@ -400,6 +397,10 @@ textarea {
   height: 100%;
 }
 
+.stage__sandbag-drag {
+  position: relative;
+}
+
 .sandbag-img {
   display: block;
   width: 100%;
@@ -414,11 +415,14 @@ textarea {
   -webkit-user-drag: none;
 }
 
-.sandbag-img--dent {
-  filter:
-    drop-shadow(0 10px 0 rgba(122, 29, 12, 0.18))
-    drop-shadow(0 22px 22px rgba(40, 26, 12, 0.5))
-    brightness(1.04);
+.sandbag-dent-mark {
+  position: absolute;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 1px 1px rgba(40, 12, 6, 0.35));
 }
 
 /* --- Flying chars ------------------------------------------------------ */
@@ -1032,38 +1036,6 @@ textarea {
   flex-shrink: 0;
 }
 
-.footer {
-  margin: 6px 0 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--ink-mute);
-}
-
-.footer__rule {
-  flex: 1 1 auto;
-  height: 1px;
-  background: currentColor;
-  opacity: 0.5;
-}
-
-.footer__mono {
-  flex: 0 0 auto;
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.32em;
-  color: var(--vermilion);
-}
-
-.footer__sub {
-  margin: 0;
-  text-align: center;
-  font-size: 0.74rem;
-  color: var(--ink-mute);
-  letter-spacing: 0.04em;
-  font-weight: 500;
-}
-
 /* --- Animations -------------------------------------------------------- */
 
 @keyframes drop-in {
@@ -1121,13 +1093,13 @@ textarea {
     padding-top: 44px;
   }
   .stage {
-    height: 480px;
+    height: 540px;
   }
   .stage__sandbag-anchor {
-    margin-top: -140px;
-    margin-left: -90px;
-    width: 180px;
-    height: 280px;
+    margin-top: -180px;
+    margin-left: -120px;
+    width: 240px;
+    height: 360px;
   }
   .stage__seal {
     width: 72px;

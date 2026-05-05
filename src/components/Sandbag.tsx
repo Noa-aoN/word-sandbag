@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import {
+  AnimatePresence,
   animate,
   motion,
   useMotionValue,
@@ -8,7 +9,7 @@ import {
 } from "framer-motion";
 import type { ImpactKind, PunchPower } from "../types/punch";
 import sandbagSrc from "../assets/sandbag/sandbag.png";
-import sandbagDentSrc from "../assets/sandbag/sandbag-dent.png";
+import dentMarkSrc from "../assets/sandbag/dent-mark.png";
 
 type Props = {
   hitKey: number;
@@ -31,7 +32,12 @@ const catSwayByPower: Record<PunchPower, { rotate: number[]; duration: number }>
   heavy: { rotate: [0, -5, 4, -2.5, 1.2, 0], duration: 0.5 },
 };
 
-const DENT_DURATION_MS = 220;
+const DENT_LIFETIME_MS = 720;
+const POWER_DENT_SIZE: Record<PunchPower, number> = {
+  light: 0.3,
+  normal: 0.38,
+  heavy: 0.46,
+};
 const DRAG_ROTATE_FACTOR = 0.32;
 const DRAG_ROTATE_MAX = 32;
 const DRAG_STRETCH_FACTOR = 0.0009;
@@ -58,28 +64,42 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
   const dragScaleY = useMotionValue(1);
   const dragActiveRef = useRef(false);
 
-  const [dented, setDented] = useState(false);
-  const dentTimerRef = useRef<number | null>(null);
+  const [dents, setDents] = useState<
+    Array<{ id: number; xPct: number; yPct: number; sizePct: number; rotate: number }>
+  >([]);
+  const dentIdRef = useRef(0);
+  const dentTimersRef = useRef<Set<number>>(new Set());
 
   useEffect(() => {
     if (hitKey === 0 || kind === "crunch") return;
-    if (dentTimerRef.current !== null) {
-      window.clearTimeout(dentTimerRef.current);
-    }
-    setDented(true);
-    dentTimerRef.current = window.setTimeout(() => {
-      setDented(false);
-      dentTimerRef.current = null;
-    }, DENT_DURATION_MS);
-  }, [hitKey, kind]);
+    dentIdRef.current += 1;
+    const id = dentIdRef.current;
+    const sideShift = side === 0 ? 0 : side * 18;
+    const xJitter = (Math.random() - 0.5) * 6;
+    const yJitter = (Math.random() - 0.5) * 14;
+    const baseSize =
+      kind === "cat" ? 0.26 : kind === "tap" ? 0.28 : POWER_DENT_SIZE[power];
+    const dent = {
+      id,
+      xPct: 50 + sideShift + xJitter,
+      yPct: 56 + yJitter,
+      sizePct: (baseSize + Math.random() * 0.06) * 100,
+      rotate: (Math.random() - 0.5) * 70,
+    };
+    setDents((prev) => [...prev, dent]);
+    const handle = window.setTimeout(() => {
+      setDents((prev) => prev.filter((d) => d.id !== id));
+      dentTimersRef.current.delete(handle);
+    }, DENT_LIFETIME_MS);
+    dentTimersRef.current.add(handle);
+  }, [hitKey, kind, power, side]);
 
   useEffect(
     () => () => {
       dragRotate.stop();
       dragScaleY.stop();
-      if (dentTimerRef.current !== null) {
-        window.clearTimeout(dentTimerRef.current);
-      }
+      for (const h of dentTimersRef.current) window.clearTimeout(h);
+      dentTimersRef.current.clear();
     },
     [dragRotate, dragScaleY],
   );
@@ -179,12 +199,37 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
             className="stage__sandbag-drag"
             style={{ rotate: dragRotate, scaleY: dragScaleY, originY: 0 }}
           >
-            <img
-              className={`sandbag-img${dented ? " sandbag-img--dent" : ""}`}
-              src={dented ? sandbagDentSrc : sandbagSrc}
-              alt=""
-              draggable={false}
-            />
+            <img className="sandbag-img" src={sandbagSrc} alt="" draggable={false} />
+            <AnimatePresence>
+              {dents.map((d) => (
+                <motion.img
+                  key={d.id}
+                  className="sandbag-dent-mark"
+                  src={dentMarkSrc}
+                  alt=""
+                  draggable={false}
+                  style={{
+                    left: `${d.xPct}%`,
+                    top: `${d.yPct}%`,
+                    width: `${d.sizePct}%`,
+                  }}
+                  initial={{ opacity: 0, scale: 0.4, rotate: d.rotate, x: "-50%", y: "-50%" }}
+                  animate={{
+                    opacity: [0, 1, 1, 0],
+                    scale: [0.4, 1, 1, 0.95],
+                    rotate: d.rotate,
+                    x: "-50%",
+                    y: "-50%",
+                  }}
+                  exit={{ opacity: 0, scale: 0.95, x: "-50%", y: "-50%" }}
+                  transition={{
+                    duration: DENT_LIFETIME_MS / 1000,
+                    times: [0, 0.12, 0.55, 1],
+                    ease: "easeOut",
+                  }}
+                />
+              ))}
+            </AnimatePresence>
           </motion.div>
         </motion.div>
       </motion.div>

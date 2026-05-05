@@ -64,7 +64,7 @@ export function InputPanel({
     <section className="input-panel" aria-label="入力エリア">
       <div className="settings-row">
         <div className="speed-control">
-          <span className="speed-control__label">速度</span>
+          <span className="speed-control__label">パンチ速度</span>
           <input
             type="range"
             className="speed-control__slider"
