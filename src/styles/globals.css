@@ -643,6 +643,22 @@ textarea {
   -webkit-user-drag: none;
   filter: drop-shadow(0 6px 10px rgba(40, 26, 12, 0.35));
   will-change: transform, opacity;
+  -webkit-mask-image: linear-gradient(
+    to top,
+    transparent 0%,
+    rgba(0, 0, 0, 0.15) 14%,
+    rgba(0, 0, 0, 0.55) 28%,
+    rgba(0, 0, 0, 0.9) 44%,
+    black 60%
+  );
+  mask-image: linear-gradient(
+    to top,
+    transparent 0%,
+    rgba(0, 0, 0, 0.15) 14%,
+    rgba(0, 0, 0, 0.55) 28%,
+    rgba(0, 0, 0, 0.9) 44%,
+    black 60%
+  );
 }
 
 .flying-paw--right {
@@ -1110,8 +1126,19 @@ textarea {
   background: var(--paper-glow);
   color: var(--vermilion-deep);
   box-shadow: 3px 3px 0 var(--ink);
-  font-size: 0.96rem;
-  padding: 8px 16px;
+  padding: 6px 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quick-punch-button__icon {
+  display: block;
+  width: 28px;
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
 }
 
 .quick-punch-button--cat:hover {
@@ -1168,25 +1195,14 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   letter-spacing: 0.18em;
   color: var(--ink-mute);
 }
 
 .app-footer__mono {
-  color: var(--vermilion);
-  letter-spacing: 0.32em;
-  font-weight: 700;
-}
-
-.app-footer__text {
-  font-family: var(--font-body);
-  font-size: 0.74rem;
-  letter-spacing: 0.04em;
-  color: var(--ink-mute);
-  font-weight: 600;
+  color: var(--ink-soft);
 }
 
 /* --- Privacy + footer -------------------------------------------------- */

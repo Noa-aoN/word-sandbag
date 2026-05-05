@@ -231,10 +231,16 @@ export function FlyingWord({ word, onComplete, onCharImpact }: Props) {
           : side * (flight.endSide + pseudoRandom(seed + 200) * flight.endSideJitter);
         const endY = flight.endY + (pseudoRandom(seed + 250) - 0.5) * flight.endYJitter;
 
-        const startRotate = flight.centered
-          ? (pseudoRandom(seed + 300) - 0.5) * 30
-          : side * (12 + pseudoRandom(seed + 300) * 22);
-        const endRotate = (pseudoRandom(seed + 350) - 0.5) * flight.endRotateRange;
+        const startRotate =
+          word.kind === "cat"
+            ? (pseudoRandom(seed + 300) - 0.5) * 360
+            : flight.centered
+              ? (pseudoRandom(seed + 300) - 0.5) * 30
+              : side * (12 + pseudoRandom(seed + 300) * 22);
+        const endRotate =
+          word.kind === "cat"
+            ? startRotate + (pseudoRandom(seed + 350) - 0.5) * 220
+            : (pseudoRandom(seed + 350) - 0.5) * flight.endRotateRange;
         const charDelay = i * delay;
         const isLast = i === lastIndex;
 

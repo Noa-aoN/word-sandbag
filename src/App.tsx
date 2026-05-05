@@ -66,10 +66,7 @@ export function App() {
         />
         <PrivacyNote />
         <footer className="app-footer">
-          <span className="app-footer__mono" aria-hidden="true">
-            HERE &amp; GONE
-          </span>
-          <span className="app-footer__text">送らない。残さない。ここで消す。</span>
+          <span className="app-footer__mono">@2026 NOA</span>
         </footer>
       </div>
     </div>

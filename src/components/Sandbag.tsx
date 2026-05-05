@@ -97,11 +97,11 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
     let xPct = 50;
     let yPct = 56;
     let tapSide = 0;
-    if (point && anchorRef.current) {
-      // Use the bag image's current bounding rect (rotated AABB) so the dent
-      // tracks where the user *visually* clicked, not the unrotated layout box.
-      const imgEl = anchorRef.current.querySelector(".sandbag-img") as HTMLElement | null;
-      const rect = (imgEl ?? anchorRef.current).getBoundingClientRect();
+    const node = anchorRef.current;
+    if (point && node) {
+      // Anchor has no own transform: its rect is the explicit layout box
+      // (var(--bag-w/h)). Reliable across idle sway / hit / drag spring.
+      const rect = node.getBoundingClientRect();
       if (rect.width > 0 && rect.height > 0) {
         xPct = Math.min(94, Math.max(6, ((point.x - rect.left) / rect.width) * 100));
         yPct = Math.min(94, Math.max(6, ((point.y - rect.top) / rect.height) * 100));
