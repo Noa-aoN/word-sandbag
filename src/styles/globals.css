@@ -259,10 +259,12 @@ textarea {
 .ring-bg {
   position: absolute;
   left: 50%;
-  bottom: -2px;
+  bottom: 0;
   transform: translateX(-50%);
-  width: 144%;
-  height: auto;
+  width: 142%;
+  height: 58%;
+  object-fit: cover;
+  object-position: bottom center;
   z-index: 1;
   pointer-events: none;
   user-select: none;
@@ -359,12 +361,12 @@ textarea {
 
 .stage__sandbag-anchor {
   position: absolute;
-  top: 36%;
+  top: 22px;
   left: 50%;
-  margin-top: -150px;
-  margin-left: -100px;
-  width: 200px;
-  height: 300px;
+  margin-top: 0;
+  margin-left: -140px;
+  width: 280px;
+  height: 280px;
   z-index: 3;
   border-radius: 18px;
   -webkit-tap-highlight-color: transparent;
@@ -444,7 +446,7 @@ textarea {
 
 .flying-char {
   position: absolute;
-  top: 50%;
+  top: 162px;
   left: 50%;
   font-family: var(--font-display);
   font-weight: 400;
@@ -478,7 +480,7 @@ textarea {
 
 .impact-wrap {
   position: absolute;
-  top: 50%;
+  top: 162px;
   left: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
@@ -538,7 +540,7 @@ textarea {
 
 .flying-paw {
   position: absolute;
-  top: 50%;
+  top: 162px;
   left: 50%;
   width: 84px;
   height: auto;
@@ -557,9 +559,16 @@ textarea {
 
 @media (min-width: 600px) {
   .flying-paw {
-    width: 96px;
-    margin-top: -48px;
-    margin-left: -48px;
+    width: 108px;
+    margin-top: -54px;
+    margin-left: -54px;
+    top: 212px;
+  }
+  .flying-char {
+    top: 212px;
+  }
+  .impact-wrap {
+    top: 212px;
   }
 }
 
@@ -1093,13 +1102,14 @@ textarea {
     padding-top: 44px;
   }
   .stage {
-    height: 540px;
+    height: 560px;
   }
   .stage__sandbag-anchor {
-    margin-top: -180px;
-    margin-left: -120px;
-    width: 240px;
-    height: 360px;
+    top: 42px;
+    margin-top: 0;
+    margin-left: -170px;
+    width: 340px;
+    height: 340px;
   }
   .stage__seal {
     width: 72px;
