@@ -70,6 +70,7 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
   >([]);
   const dentIdRef = useRef(0);
   const dentTimersRef = useRef<Set<number>>(new Set());
+  const lastDentHitKeyRef = useRef(0);
 
   const pushDent = useCallback((xPct: number, yPct: number, baseSize: number) => {
     const safeX = Number.isFinite(xPct) ? Math.min(96, Math.max(4, xPct)) : 50;
@@ -97,12 +98,16 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
     let xPct = 50;
     let yPct = 56;
     let tapSide = 0;
-    const node = anchorRef.current;
-    if (point && node) {
-      // Anchor has no own transform: its rect is the explicit layout box
-      // (var(--bag-w/h)). Reliable across idle sway / hit / drag spring.
-      const rect = node.getBoundingClientRect();
-      if (rect.width > 0 && rect.height > 0) {
+    const anchor = anchorRef.current;
+    if (point && anchor) {
+      // Use the drag div's bounding rect (= rotated AABB including idle sway /
+      // drag rotate). Math: with a top-pivot rotation by θ, percentages relative
+      // to the rotated AABB map back through the same rotation, so a dent placed
+      // at xPct/yPct of the unrotated drag-div local lands visually at the click.
+      const dragEl = anchor.querySelector(".stage__sandbag-drag") as HTMLElement | null;
+      const refEl = dragEl ?? anchor;
+      const rect = refEl.getBoundingClientRect();
+      if (rect.width > 4 && rect.height > 4) {
         xPct = Math.min(94, Math.max(6, ((point.x - rect.left) / rect.width) * 100));
         yPct = Math.min(94, Math.max(6, ((point.y - rect.top) / rect.height) * 100));
         tapSide = xPct < 36 ? -1 : xPct > 64 ? 1 : 0;
@@ -122,6 +127,10 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
 
   useEffect(() => {
     if (hitKey === 0 || kind === "crunch" || kind === "tap") return;
+    // Dedupe: only the first effect run for a given hitKey produces a dent.
+    // Guards against StrictMode re-invocation and any duplicate render path.
+    if (lastDentHitKeyRef.current === hitKey) return;
+    lastDentHitKeyRef.current = hitKey;
     const sideMag = kind === "hook" ? 28 : 18;
     // Hook: dent appears on the side that received the force (opposite the swing direction)
     const sideShift =

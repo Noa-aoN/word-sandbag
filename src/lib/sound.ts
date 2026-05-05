@@ -292,30 +292,26 @@ function hugChord() {
   const master = getMaster(c);
   const now = c.currentTime;
 
-  // Soft lowpass + gentle gain stage to keep the tones airy and round
+  // Soft lowpass keeps overtones gentle. Lower cutoff than before for a more
+  // pillowy timbre; bus gain slightly attenuated for overall softness.
   const bus = c.createGain();
-  bus.gain.value = 1;
+  bus.gain.value = 0.85;
   const lp = c.createBiquadFilter();
   lp.type = "lowpass";
-  lp.frequency.setValueAtTime(1800, now);
-  lp.Q.setValueAtTime(0.7, now);
+  lp.frequency.setValueAtTime(1400, now);
+  lp.Q.setValueAtTime(0.6, now);
   bus.connect(lp);
   lp.connect(master);
 
-  // Pad layer: slow attack pad with two octaves of root for warmth
-  softTone(c, bus, "sine", 196.0, 0.1, now, 0.32, 1.4); // G3 sub
-  softTone(c, bus, "sine", 392.0, 0.13, now, 0.28, 1.4); // G4 root
+  // Slow-blooming pad: longer attacks, lower volumes, sparkle removed
+  softTone(c, bus, "sine", 196.0, 0.06, now, 0.45, 1.6); // G3 sub
+  softTone(c, bus, "sine", 392.0, 0.075, now, 0.42, 1.6); // G4 root
+  softTone(c, bus, "sine", 493.88, 0.05, now + 0.12, 0.46, 1.4); // B4 third
+  softTone(c, bus, "sine", 587.33, 0.04, now + 0.2, 0.48, 1.2); // D5 fifth
+  softTone(c, bus, "sine", 783.99, 0.022, now + 0.32, 0.5, 1.0); // G5 octave (subtle)
 
-  // Major chord on top, slightly delayed for cascade ("welcome hug")
-  softTone(c, bus, "sine", 493.88, 0.085, now + 0.08, 0.32, 1.2); // B4 third
-  softTone(c, bus, "sine", 587.33, 0.07, now + 0.14, 0.34, 1.05); // D5 fifth
-  softTone(c, bus, "sine", 783.99, 0.045, now + 0.22, 0.36, 0.9); // G5 octave
-
-  // Shimmering top for sparkle
-  softTone(c, bus, "sine", 1175.0, 0.025, now + 0.32, 0.4, 0.7); // D6 high
-
-  // Soft "breath" of triangle bass under the pad
-  softTone(c, bus, "triangle", 98.0, 0.06, now, 0.4, 1.3); // G2 deep
+  // Warm triangle breath under the chord
+  softTone(c, bus, "triangle", 98.0, 0.035, now, 0.5, 1.5); // G2 deep
 }
 
 function hookSwing() {
