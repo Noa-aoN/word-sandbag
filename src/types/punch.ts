@@ -11,5 +11,6 @@ export type FlyingWord = {
   kind: PunchKind;
   emphasized: boolean;
   speed: number;
+  side?: -1 | 1;
   createdAt: number;
 };

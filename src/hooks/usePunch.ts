@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { FlyingWord, ImpactKind, PunchKind, PunchPower } from "../types/punch";
 import { playImpact, primeAudio } from "../lib/sound";
+import { clampNumber, sanitizeInput } from "../lib/sanitize";
 
 const COMPLETE_MESSAGES = [
   "その言葉は、ここで消えました。",
@@ -23,7 +24,8 @@ const MESSAGE_DURATION_MS = 1800;
 const TAP_MESSAGE_DURATION_MS = 900;
 const MESSAGE_AFTER_FIRST_IMPACT_MS = 380;
 
-const CAT_TEXT = "にゃーん";
+const CAT_TEXT = "ニ";
+
 
 const SPEED_MIN = 0.5;
 const SPEED_MAX = 1.7;
@@ -66,11 +68,6 @@ function vibrate(power: PunchPower) {
 function pickRandom<T>(items: readonly T[]): T | undefined {
   if (items.length === 0) return undefined;
   return items[Math.floor(Math.random() * items.length)];
-}
-
-function clampSpeed(v: number): number {
-  if (Number.isNaN(v)) return SPEED_DEFAULT;
-  return Math.min(SPEED_MAX, Math.max(SPEED_MIN, v));
 }
 
 let idCounter = 0;
@@ -130,7 +127,7 @@ export function usePunch() {
   }, []);
 
   const setSpeed = useCallback((v: number) => {
-    setSpeedState(clampSpeed(v));
+    setSpeedState(clampNumber(v, SPEED_MIN, SPEED_MAX, SPEED_DEFAULT));
   }, []);
 
   const toggleSound = useCallback(() => {
@@ -142,8 +139,8 @@ export function usePunch() {
   }, []);
 
   const dispatchPunch = useCallback(
-    (content: string, kind: PunchKind = "punch") => {
-      const trimmed = content.trim();
+    (content: string, kind: PunchKind = "punch", forcedSide?: -1 | 1) => {
+      const trimmed = sanitizeInput(content);
       if (trimmed.length === 0) return;
 
       let power: PunchPower;
@@ -163,6 +160,7 @@ export function usePunch() {
         kind,
         emphasized: isEmphasized(trimmed),
         speed,
+        side: forcedSide,
         createdAt: Date.now(),
       };
 
@@ -223,7 +221,8 @@ export function usePunch() {
   );
 
   const catPunch = useCallback(() => {
-    dispatchPunch(CAT_TEXT, "cat");
+    const side: -1 | 1 = Math.random() < 0.5 ? -1 : 1;
+    dispatchPunch(CAT_TEXT, "cat", side);
   }, [dispatchPunch]);
 
   const tap = useCallback(

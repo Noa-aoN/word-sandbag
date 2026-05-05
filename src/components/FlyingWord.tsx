@@ -151,12 +151,13 @@ export function FlyingWord({ word, onComplete, onCharImpact }: Props) {
     [word.text],
   );
 
-  const flight = KIND_FLIGHT[word.kind];
-  const speed = word.speed > 0 ? word.speed : 1;
+  const flight = KIND_FLIGHT[word.kind] ?? KIND_FLIGHT.punch;
+  const speed = word.speed > 0 ? Math.min(3, word.speed) : 1;
   const duration = flight.duration / speed;
   const delay = flight.delay / speed;
   const peakSec = duration * flight.times[2];
   const lastIndex = chars.length - 1;
+  const forcedSide = word.side === -1 || word.side === 1 ? word.side : null;
 
   const onCharImpactRef = useRef(onCharImpact);
   onCharImpactRef.current = onCharImpact;
@@ -165,7 +166,9 @@ export function FlyingWord({ word, onComplete, onCharImpact }: Props) {
     const timers: number[] = [];
     for (let i = 0; i < chars.length; i++) {
       const at = i * delay + peakSec;
-      const charSide = flight.centered ? 0 : i % 2 === 0 ? -1 : 1;
+      const charSide = flight.centered
+        ? 0
+        : forcedSide ?? (i % 2 === 0 ? -1 : 1);
       const t = window.setTimeout(() => {
         onCharImpactRef.current(word.power, word.kind, charSide);
       }, at * 1000);
@@ -174,7 +177,7 @@ export function FlyingWord({ word, onComplete, onCharImpact }: Props) {
     return () => {
       for (const t of timers) window.clearTimeout(t);
     };
-  }, [chars.length, delay, peakSec, flight.centered, word.id, word.power, word.kind]);
+  }, [chars.length, delay, peakSec, flight.centered, forcedSide, word.id, word.power, word.kind]);
 
   if (reduce) {
     return (
@@ -211,7 +214,7 @@ export function FlyingWord({ word, onComplete, onCharImpact }: Props) {
     >
       {chars.map((c, i) => {
         const seed = i + 1;
-        const side = flight.centered ? 0 : i % 2 === 0 ? -1 : 1;
+        const side = flight.centered ? 0 : forcedSide ?? (i % 2 === 0 ? -1 : 1);
 
         const startX = flight.centered
           ? (pseudoRandom(seed) - 0.5) * flight.startSideJitter * 2

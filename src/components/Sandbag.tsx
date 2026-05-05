@@ -1,4 +1,11 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from "react";
 import {
   AnimatePresence,
   animate,
@@ -64,14 +71,17 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
   const dentIdRef = useRef(0);
   const dentTimersRef = useRef<Set<number>>(new Set());
 
-  const pushDent = (xPct: number, yPct: number, baseSize: number) => {
+  const pushDent = useCallback((xPct: number, yPct: number, baseSize: number) => {
+    const safeX = Number.isFinite(xPct) ? Math.min(96, Math.max(4, xPct)) : 50;
+    const safeY = Number.isFinite(yPct) ? Math.min(96, Math.max(4, yPct)) : 56;
+    const safeSize = Number.isFinite(baseSize) ? Math.min(0.95, Math.max(0.18, baseSize)) : 0.4;
     dentIdRef.current += 1;
     const id = dentIdRef.current;
     const dent = {
       id,
-      xPct,
-      yPct,
-      sizePct: (baseSize + Math.random() * 0.06) * 100,
+      xPct: safeX,
+      yPct: safeY,
+      sizePct: (safeSize + Math.random() * 0.06) * 100,
       rotate: (Math.random() - 0.5) * 70,
     };
     setDents((prev) => [...prev, dent]);
@@ -80,16 +90,18 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
       dentTimersRef.current.delete(handle);
     }, DENT_LIFETIME_MS);
     dentTimersRef.current.add(handle);
-  };
+  }, []);
 
   const handleTapAt = (point: { x: number; y: number } | null) => {
     if (!onTap) return;
     let xPct = 50;
     let yPct = 56;
     let tapSide = 0;
-    const node = anchorRef.current;
-    if (point && node) {
-      const rect = node.getBoundingClientRect();
+    if (point && anchorRef.current) {
+      // Use the bag image's current bounding rect (rotated AABB) so the dent
+      // tracks where the user *visually* clicked, not the unrotated layout box.
+      const imgEl = anchorRef.current.querySelector(".sandbag-img") as HTMLElement | null;
+      const rect = (imgEl ?? anchorRef.current).getBoundingClientRect();
       if (rect.width > 0 && rect.height > 0) {
         xPct = Math.min(94, Math.max(6, ((point.x - rect.left) / rect.width) * 100));
         yPct = Math.min(94, Math.max(6, ((point.y - rect.top) / rect.height) * 100));
@@ -126,8 +138,7 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
             : POWER_DENT_SIZE[power];
     const yPos = kind === "upper" ? 78 : 56;
     pushDent(50 + sideShift + xJitter, yPos + yJitter, baseSize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hitKey, kind, power, side]);
+  }, [hitKey, kind, power, side, pushDent]);
 
   useEffect(
     () => () => {
