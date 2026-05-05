@@ -17,6 +17,7 @@ import {
 import type { BagState, ImpactKind, PunchPower } from "../types/punch";
 import sandbagSrc from "../assets/sandbag/sandbag.png";
 import dentMarkSrc from "../assets/sandbag/dent-mark.png";
+import { tapPointToBagPercent } from "../lib/tap-position";
 
 type Props = {
   hitKey: number;
@@ -104,24 +105,13 @@ export function Sandbag({
 
   const handleTapAt = (point: { x: number; y: number } | null) => {
     if (!onTap || bagState !== "active") return;
-    let xPct = 50;
-    let yPct = 56;
-    let tapSide = 0;
+    // Anchor stays unrotated while bagState === "active" (anchorAnimate is the
+    // identity in that branch), so its rect is a stable design-space frame for
+    // the bag — independent of idle sway / drag / hit motion which rotate the
+    // children. This avoids the rotated-AABB drift that grows with bag size.
     const anchor = anchorRef.current;
-    if (point && anchor) {
-      // Use the drag div's bounding rect (= rotated AABB including idle sway /
-      // drag rotate). Math: with a top-pivot rotation by θ, percentages relative
-      // to the rotated AABB map back through the same rotation, so a dent placed
-      // at xPct/yPct of the unrotated drag-div local lands visually at the click.
-      const dragEl = anchor.querySelector(".stage__sandbag-drag") as HTMLElement | null;
-      const refEl = dragEl ?? anchor;
-      const rect = refEl.getBoundingClientRect();
-      if (rect.width > 4 && rect.height > 4) {
-        xPct = Math.min(94, Math.max(6, ((point.x - rect.left) / rect.width) * 100));
-        yPct = Math.min(94, Math.max(6, ((point.y - rect.top) / rect.height) * 100));
-        tapSide = xPct < 36 ? -1 : xPct > 64 ? 1 : 0;
-      }
-    }
+    const rect = anchor ? anchor.getBoundingClientRect() : null;
+    const { xPct, yPct, side: tapSide } = tapPointToBagPercent(point, rect);
     pushDent(xPct, yPct, 0.4);
     onTap(tapSide, point);
   };
