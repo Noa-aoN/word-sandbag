@@ -27,7 +27,7 @@ const CAT_TEXT = "にゃーん";
 
 const SPEED_MIN = 0.5;
 const SPEED_MAX = 1.7;
-const SPEED_DEFAULT = 1.0;
+const SPEED_DEFAULT = 1.1;
 
 const INTENSITY_MIN = 1.0;
 const INTENSITY_MAX = 3.0;
@@ -90,7 +90,7 @@ export function usePunch() {
   const [hitCount, setHitCount] = useState(0);
   const [message, setMessage] = useState("");
   const [speed, setSpeedState] = useState(SPEED_DEFAULT);
-  const [soundOn, setSoundOn] = useState(false);
+  const [soundOn, setSoundOn] = useState(true);
 
   const messageTimerRef = useRef<number | null>(null);
   const messageDelayTimerRef = useRef<number | null>(null);
