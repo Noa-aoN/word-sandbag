@@ -1,12 +1,27 @@
+const TITLE = "言葉サンドバッグ";
+
 export function Header() {
   return (
     <header className="header">
-      <h1 className="header__title">言葉サンドバッグ</h1>
-      <p className="header__catch">その言葉、ここでぶつけて消そう。</p>
+      <h1 className="header__title">
+        <span className="visually-hidden">{TITLE}</span>
+        <span className="header__title-row" aria-hidden="true">
+          {[...TITLE].map((c, i) => (
+            <span
+              key={i}
+              className="header__title-char"
+              style={{ animationDelay: `${0.04 * i}s` }}
+            >
+              {c}
+            </span>
+          ))}
+        </span>
+      </h1>
+      <p className="header__catch">
+        その言葉、<span className="header__catch-em">ここでぶつけて消そう。</span>
+      </p>
       <p className="header__sub">
-        誰にも送らない。どこにも残さない。
-        <br />
-        思いの丈をサンドバッグへ。
+        誰にも送らない。どこにも残さない。思いの丈をサンドバッグへ。
       </p>
     </header>
   );

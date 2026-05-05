@@ -1,12 +1,18 @@
+import type { CSSProperties } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import type { PunchPower } from "../types/punch";
+import type { ImpactKind, PunchPower } from "../types/punch";
+import burstSrc from "../assets/sandbag/burst.png";
+import heartSrc from "../assets/sandbag/heart.png";
 
 type Props = {
   hitKey: number;
   power: PunchPower;
+  kind: ImpactKind;
+  side: number;
+  point: { x: number; y: number } | null;
 };
 
-const labelByPower: Record<PunchPower, string> = {
+const PUNCH_LABEL: Record<PunchPower, string> = {
   light: "ポンッ",
   normal: "バシッ",
   heavy: "ドゴッ",
@@ -18,30 +24,85 @@ const sizeByPower: Record<PunchPower, number> = {
   heavy: 1.25,
 };
 
-export function ImpactEffect({ hitKey, power }: Props) {
+function labelFor(kind: ImpactKind, power: PunchPower): string {
+  if (kind === "cat") return "にゃっ";
+  if (kind === "crunch") return "ぎゅっ";
+  if (kind === "tap") return "ポン";
+  if (kind === "hook") return "ガッ";
+  if (kind === "upper") return "ドカッ";
+  return PUNCH_LABEL[power];
+}
+
+export function ImpactEffect({ hitKey, power, kind, side, point }: Props) {
   const reduce = useReducedMotion();
   if (hitKey === 0) return null;
 
   const scale = sizeByPower[power];
+  const showBurst = !reduce && kind !== "crunch";
+  const useTapPos = kind === "tap" && point !== null;
+  const offsetPx = !useTapPos && (kind === "punch" || kind === "cat" || kind === "hook") ? side * 30 : 0;
+  const wrapStyle: CSSProperties = useTapPos && point
+    ? {
+        top: `${point.y}px`,
+        left: `${point.x}px`,
+        transform: "translate(-50%, -50%)",
+      }
+    : { transform: `translate(calc(-50% + ${offsetPx}px), -50%)` };
 
   return (
-    <motion.div
-      key={hitKey}
-      className="impact"
-      initial={{ opacity: 0, scale: 0.6 }}
-      animate={{ opacity: [0, 1, 0], scale: [0.6 * scale, 1.1 * scale, 0.95 * scale] }}
-      transition={{ duration: reduce ? 0.2 : 0.55, times: [0, 0.3, 1] }}
-      aria-hidden="true"
-    >
-      {!reduce && (
-        <motion.span
-          className="impact__burst"
-          initial={{ opacity: 0.6, scale: 0.4 }}
-          animate={{ opacity: 0, scale: 1.6 * scale }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-        />
-      )}
-      <span className="impact__text">{labelByPower[power]}</span>
-    </motion.div>
+    <div className={`impact-wrap impact-wrap--${kind}`} style={wrapStyle} aria-hidden="true">
+      <motion.div
+        key={hitKey}
+        className={`impact impact--${kind}`}
+        initial={{ opacity: 0, scale: 0.6 }}
+        animate={{
+          opacity: [0, 1, 0],
+          scale: [0.6 * scale, 1.1 * scale, 0.95 * scale],
+        }}
+        transition={{ duration: reduce ? 0.2 : 0.55, times: [0, 0.3, 1] }}
+      >
+        {showBurst && (
+          <motion.img
+            className="impact__burst-img"
+            src={burstSrc}
+            alt=""
+            draggable={false}
+            initial={{ opacity: 0, scale: 0.4, rotate: -8 }}
+            animate={{ opacity: [0.95, 0], scale: [0.5 * scale, 1.5 * scale], rotate: 12 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          />
+        )}
+        {kind === "crunch" && !reduce && (
+          <>
+            <motion.div
+              className="impact__aura"
+              initial={{ opacity: 0, scale: 0.35 }}
+              animate={{ opacity: [0, 0.7, 0.4, 0], scale: [0.35, 1.2, 1.6, 2.0] }}
+              transition={{ duration: 1.05, ease: "easeOut", times: [0, 0.25, 0.6, 1] }}
+            />
+            <motion.div
+              className="impact__aura impact__aura--inner"
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: [0, 0.85, 0], scale: [0.5, 1.0, 1.4] }}
+              transition={{ duration: 0.95, ease: "easeOut", times: [0, 0.4, 1] }}
+            />
+            <motion.img
+              className="impact__heart-img"
+              src={heartSrc}
+              alt=""
+              draggable={false}
+              initial={{ opacity: 0, scale: 0.4, rotate: -12 }}
+              animate={{
+                opacity: [0, 1, 0.85, 0],
+                scale: [0.4, 1.1, 1.05, 1.3],
+                rotate: [-12, 0, 6, 14],
+              }}
+              transition={{ duration: 1.0, ease: "easeOut", times: [0, 0.25, 0.7, 1] }}
+            />
+          </>
+        )}
+        <span className="impact__text">{labelFor(kind, power)}</span>
+      </motion.div>
+    </div>
   );
 }

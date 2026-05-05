@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { FlyingWord, PunchPower } from "../types/punch";
+import type {
+  BagState,
+  FlyingWord,
+  ImpactKind,
+  PunchKind,
+  PunchPower,
+} from "../types/punch";
+import { playErupt, playImpact, primeAudio } from "../lib/sound";
+import { clampNumber, sanitizeInput } from "../lib/sanitize";
 
 const COMPLETE_MESSAGES = [
   "その言葉は、ここで消えました。",
@@ -8,12 +16,38 @@ const COMPLETE_MESSAGES = [
   "少しだけ、軽くなりますように。",
 ];
 
+const TAP_MESSAGES = ["ポンッ。", "そのままでいいです。", "受け止めました。"];
+
+const CRUNCH_MESSAGES = [
+  "ぎゅっと包みました。",
+  "そのまま預かります。",
+  "ふわっと受け止めました。",
+];
+
+const CAT_MESSAGES = ["にゃ。", "猫の手も借りました。", "ねこパンチ完了。"];
+
 const MESSAGE_DURATION_MS = 1800;
-const IMPACT_DELAY_MS_BY_POWER: Record<PunchPower, number> = {
-  light: 380,
-  normal: 430,
-  heavy: 500,
-};
+const TAP_MESSAGE_DURATION_MS = 900;
+const MESSAGE_AFTER_FIRST_IMPACT_MS = 380;
+
+const CAT_TEXT = "ニ";
+
+
+const SPEED_MIN = 0.5;
+const SPEED_MAX = 1.7;
+const SPEED_DEFAULT = 1.1;
+
+const INTENSITY_MIN = 1.0;
+const INTENSITY_MAX = 3.0;
+const INTENSITY_INC = 0.15;
+const INTENSITY_CRUNCH_DEC = 0.25;
+const INTENSITY_DECAY_MS = 1800;
+
+const BREAK_AT = 300;
+const DEPART_DURATION_MS = 1400;
+const MISSING_DURATION_MS = 1500;
+const RETURN_MESSAGE = "新しいの持ってきたよ。";
+const RETURN_MESSAGE_DURATION_MS = 2400;
 
 function classifyPower(text: string): PunchPower {
   const len = text.length;
@@ -29,7 +63,7 @@ function bumpPower(power: PunchPower): PunchPower {
 }
 
 function isEmphasized(text: string): boolean {
-  const matches = text.match(/[!！?？]/g);
+  const matches = text.match(/[!!??]/gu);
   return (matches?.length ?? 0) >= 3;
 }
 
@@ -39,8 +73,13 @@ function vibrate(power: PunchPower) {
   try {
     navigator.vibrate(ms);
   } catch {
-    // navigator.vibrate may throw on some browsers when called without user activation
+    // navigator.vibrate may throw without user activation on some browsers
   }
+}
+
+function pickRandom<T>(items: readonly T[]): T | undefined {
+  if (items.length === 0) return undefined;
+  return items[Math.floor(Math.random() * items.length)];
 }
 
 let idCounter = 0;
@@ -54,67 +93,280 @@ export function usePunch() {
   const [flyingWords, setFlyingWords] = useState<FlyingWord[]>([]);
   const [hitKey, setHitKey] = useState(0);
   const [hitPower, setHitPower] = useState<PunchPower>("normal");
+  const [hitKind, setHitKind] = useState<ImpactKind>("punch");
+  const [hitSide, setHitSide] = useState(0);
+  const [hitIntensity, setHitIntensity] = useState(INTENSITY_MIN);
   const [hitCount, setHitCount] = useState(0);
   const [message, setMessage] = useState("");
+  const [speed, setSpeedState] = useState(SPEED_DEFAULT);
+  const [soundOn, setSoundOn] = useState(true);
+  const [bagState, setBagState] = useState<BagState>("active");
+
   const messageTimerRef = useRef<number | null>(null);
-  const impactTimerRef = useRef<number | null>(null);
+  const messageDelayTimerRef = useRef<number | null>(null);
+  const intensityDecayRef = useRef<number | null>(null);
+  const eruptTimersRef = useRef<number[]>([]);
+  const soundOnRef = useRef(soundOn);
+  soundOnRef.current = soundOn;
+  const bagStateRef = useRef(bagState);
+  bagStateRef.current = bagState;
+  const hitCountRef = useRef(hitCount);
+  hitCountRef.current = hitCount;
 
   useEffect(
     () => () => {
-      if (messageTimerRef.current !== null) {
-        window.clearTimeout(messageTimerRef.current);
-      }
-      if (impactTimerRef.current !== null) {
-        window.clearTimeout(impactTimerRef.current);
-      }
+      if (messageTimerRef.current !== null) window.clearTimeout(messageTimerRef.current);
+      if (messageDelayTimerRef.current !== null)
+        window.clearTimeout(messageDelayTimerRef.current);
+      if (intensityDecayRef.current !== null)
+        window.clearTimeout(intensityDecayRef.current);
+      for (const t of eruptTimersRef.current) window.clearTimeout(t);
+      eruptTimersRef.current = [];
     },
     [],
   );
 
-  const punch = useCallback(() => {
-    setText((current) => {
-      const trimmed = current.trim();
-      if (trimmed.length === 0) return current;
+  // Trigger the bag-departure cinematic only when the threshold is crossed AND
+  // any in-flight word punch has fully resolved (flyingWords.length === 0).
+  // This satisfies the "finish the current word first" requirement.
+  useEffect(() => {
+    if (bagState !== "active") return;
+    if (hitCount < BREAK_AT) return;
+    if (flyingWords.length > 0) return;
 
-      const basePower = classifyPower(trimmed);
-      const power = isEmphasized(trimmed) ? bumpPower(basePower) : basePower;
+    setMessage("");
+    if (messageTimerRef.current !== null) {
+      window.clearTimeout(messageTimerRef.current);
+      messageTimerRef.current = null;
+    }
+    if (messageDelayTimerRef.current !== null) {
+      window.clearTimeout(messageDelayTimerRef.current);
+      messageDelayTimerRef.current = null;
+    }
+    if (intensityDecayRef.current !== null) {
+      window.clearTimeout(intensityDecayRef.current);
+      intensityDecayRef.current = null;
+    }
+
+    setBagState("departing");
+    if (soundOnRef.current) playErupt();
+
+    const t1 = window.setTimeout(() => {
+      setBagState("missing");
+    }, DEPART_DURATION_MS);
+    eruptTimersRef.current.push(t1);
+
+    const t2 = window.setTimeout(() => {
+      setBagState("active");
+      setHitCount(0);
+      setHitIntensity(INTENSITY_MIN);
+    }, DEPART_DURATION_MS + MISSING_DURATION_MS);
+    eruptTimersRef.current.push(t2);
+
+    // Show the "new bag arrived" message once it's actually back on stage.
+    const t3 = window.setTimeout(() => {
+      setMessage(RETURN_MESSAGE);
+      if (messageTimerRef.current !== null) window.clearTimeout(messageTimerRef.current);
+      messageTimerRef.current = window.setTimeout(() => {
+        setMessage("");
+        messageTimerRef.current = null;
+      }, RETURN_MESSAGE_DURATION_MS);
+    }, DEPART_DURATION_MS + MISSING_DURATION_MS + 80);
+    eruptTimersRef.current.push(t3);
+  }, [bagState, hitCount, flyingWords.length]);
+
+  const scheduleIntensityDecay = useCallback(() => {
+    if (intensityDecayRef.current !== null) {
+      window.clearTimeout(intensityDecayRef.current);
+    }
+    intensityDecayRef.current = window.setTimeout(() => {
+      setHitIntensity(INTENSITY_MIN);
+      intensityDecayRef.current = null;
+    }, INTENSITY_DECAY_MS);
+  }, []);
+
+  const showMessage = useCallback((msg: string, duration: number) => {
+    if (!msg) return;
+    setMessage(msg);
+    if (messageTimerRef.current !== null) window.clearTimeout(messageTimerRef.current);
+    messageTimerRef.current = window.setTimeout(() => {
+      setMessage("");
+      messageTimerRef.current = null;
+    }, duration);
+  }, []);
+
+  const setSpeed = useCallback((v: number) => {
+    setSpeedState(clampNumber(v, SPEED_MIN, SPEED_MAX, SPEED_DEFAULT));
+  }, []);
+
+  const toggleSound = useCallback(() => {
+    setSoundOn((on) => {
+      const next = !on;
+      if (next) primeAudio();
+      return next;
+    });
+  }, []);
+
+  const dispatchPunch = useCallback(
+    (content: string, kind: PunchKind = "punch", forcedSide?: -1 | 1) => {
+      if (bagStateRef.current !== "active") return;
+      if (hitCountRef.current >= BREAK_AT) return;
+      const trimmed = sanitizeInput(content);
+      if (trimmed.length === 0) return;
+
+      let power: PunchPower;
+      if (kind === "crunch") {
+        power = "light";
+      } else if (kind === "cat") {
+        power = "normal";
+      } else {
+        const base = classifyPower(trimmed);
+        power = isEmphasized(trimmed) ? bumpPower(base) : base;
+      }
 
       const word: FlyingWord = {
         id: nextId(),
         text: trimmed,
         power,
+        kind,
         emphasized: isEmphasized(trimmed),
+        speed,
+        side: forcedSide,
         createdAt: Date.now(),
       };
 
       setFlyingWords((prev) => [...prev, word]);
 
-      if (impactTimerRef.current !== null) {
-        window.clearTimeout(impactTimerRef.current);
-      }
-      impactTimerRef.current = window.setTimeout(() => {
-        setHitPower(power);
-        setHitCount((c) => c + 1);
-        setHitKey((k) => k + 1);
+      if (messageDelayTimerRef.current !== null)
+        window.clearTimeout(messageDelayTimerRef.current);
+      const messages =
+        kind === "crunch"
+          ? CRUNCH_MESSAGES
+          : kind === "cat"
+            ? CAT_MESSAGES
+            : COMPLETE_MESSAGES;
+      const msg = pickRandom(messages) ?? "";
+      messageDelayTimerRef.current = window.setTimeout(() => {
+        showMessage(msg, MESSAGE_DURATION_MS);
+        messageDelayTimerRef.current = null;
+      }, Math.round(MESSAGE_AFTER_FIRST_IMPACT_MS / speed));
+    },
+    [showMessage, speed],
+  );
 
-        const msg =
-          COMPLETE_MESSAGES[Math.floor(Math.random() * COMPLETE_MESSAGES.length)] ?? "";
-        setMessage(msg);
-        if (messageTimerRef.current !== null) {
-          window.clearTimeout(messageTimerRef.current);
-        }
-        messageTimerRef.current = window.setTimeout(() => {
-          setMessage("");
-          messageTimerRef.current = null;
-        }, MESSAGE_DURATION_MS);
-
-        vibrate(power);
-        impactTimerRef.current = null;
-      }, IMPACT_DELAY_MS_BY_POWER[power]);
-
+  const punch = useCallback(() => {
+    if (bagStateRef.current !== "active" || hitCountRef.current >= BREAK_AT) return;
+    setText((current) => {
+      dispatchPunch(current, "punch");
       return "";
     });
-  }, []);
+  }, [dispatchPunch]);
+
+  const crunch = useCallback(() => {
+    if (bagStateRef.current !== "active" || hitCountRef.current >= BREAK_AT) return;
+    setText((current) => {
+      const trimmed = current.trim();
+      if (trimmed.length > 0) {
+        dispatchPunch(current, "crunch");
+        return "";
+      }
+      setHitPower("light");
+      setHitKind("crunch");
+      setHitSide(0);
+      setHitCount((c) => c + 1);
+      setHitKey((k) => k + 1);
+      setHitIntensity((prev) => Math.max(INTENSITY_MIN, prev - INTENSITY_CRUNCH_DEC));
+      if (intensityDecayRef.current !== null) {
+        window.clearTimeout(intensityDecayRef.current);
+        intensityDecayRef.current = null;
+      }
+      showMessage(pickRandom(CRUNCH_MESSAGES) ?? "", MESSAGE_DURATION_MS);
+      if (soundOnRef.current) playImpact("crunch", "light");
+      return current;
+    });
+  }, [dispatchPunch, showMessage]);
+
+  const punchWith = useCallback(
+    (preset: string) => {
+      dispatchPunch(preset, "punch");
+    },
+    [dispatchPunch],
+  );
+
+  const catPunch = useCallback(() => {
+    if (bagStateRef.current !== "active" || hitCountRef.current >= BREAK_AT) return;
+    const side: -1 | 1 = Math.random() < 0.5 ? -1 : 1;
+    dispatchPunch(CAT_TEXT, "cat", side);
+  }, [dispatchPunch]);
+
+  const tap = useCallback(
+    (side: number = 0) => {
+      if (bagStateRef.current !== "active" || hitCountRef.current >= BREAK_AT) return;
+      setHitPower("light");
+      setHitKind("tap");
+      setHitSide(side);
+      setHitCount((c) => c + 1);
+      setHitKey((k) => k + 1);
+      setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 0.6));
+      scheduleIntensityDecay();
+      showMessage(pickRandom(TAP_MESSAGES) ?? "", TAP_MESSAGE_DURATION_MS);
+      if (soundOnRef.current) playImpact("tap", "light");
+      vibrate("light");
+    },
+    [showMessage, scheduleIntensityDecay],
+  );
+
+  const hook = useCallback(() => {
+    if (bagStateRef.current !== "active" || hitCountRef.current >= BREAK_AT) return;
+    const side = Math.random() < 0.5 ? -1 : 1;
+    setHitPower("heavy");
+    setHitKind("hook");
+    setHitSide(side);
+    setHitCount((c) => c + 1);
+    setHitKey((k) => k + 1);
+    setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 1.6));
+    scheduleIntensityDecay();
+    if (soundOnRef.current) playImpact("hook", "heavy");
+    vibrate("heavy");
+  }, [scheduleIntensityDecay]);
+
+  const upper = useCallback(() => {
+    if (bagStateRef.current !== "active" || hitCountRef.current >= BREAK_AT) return;
+    setHitPower("heavy");
+    setHitKind("upper");
+    setHitSide(0);
+    setHitCount((c) => c + 1);
+    setHitKey((k) => k + 1);
+    setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 1.4));
+    scheduleIntensityDecay();
+    if (soundOnRef.current) playImpact("upper", "heavy");
+    vibrate("heavy");
+  }, [scheduleIntensityDecay]);
+
+  const charImpact = useCallback(
+    (power: PunchPower, kind: PunchKind, side: number) => {
+      setHitPower(power);
+      setHitKind(kind);
+      setHitSide(side);
+      setHitCount((c) => c + 1);
+      setHitKey((k) => k + 1);
+
+      if (kind === "crunch") {
+        setHitIntensity((prev) => Math.max(INTENSITY_MIN, prev - INTENSITY_CRUNCH_DEC));
+        if (intensityDecayRef.current !== null) {
+          window.clearTimeout(intensityDecayRef.current);
+          intensityDecayRef.current = null;
+        }
+      } else {
+        setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC));
+        scheduleIntensityDecay();
+      }
+
+      if (soundOnRef.current) playImpact(kind, power);
+      if (kind !== "crunch") vibrate(power);
+    },
+    [scheduleIntensityDecay],
+  );
 
   const removeWord = useCallback((id: string) => {
     setFlyingWords((prev) => prev.filter((w) => w.id !== id));
@@ -126,9 +378,25 @@ export function usePunch() {
     flyingWords,
     hitKey,
     hitPower,
+    hitKind,
+    hitSide,
+    hitIntensity,
     hitCount,
     message,
+    speed,
+    soundOn,
+    bagState,
+    setSpeed,
+    toggleSound,
     punch,
+    punchWith,
+    crunch,
+    catPunch,
+    hook,
+    upper,
+    tap,
+    charImpact,
     removeWord,
+    speedRange: { min: SPEED_MIN, max: SPEED_MAX, step: 0.1, default: SPEED_DEFAULT },
   };
 }
