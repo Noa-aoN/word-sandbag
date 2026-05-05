@@ -113,17 +113,17 @@ textarea {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 22px 16px 36px;
-  padding-bottom: max(36px, env(safe-area-inset-bottom));
-  gap: 18px;
+  padding: 24px 20px 40px;
+  padding-bottom: max(40px, env(safe-area-inset-bottom));
+  gap: 20px;
 }
 
 .app__inner {
   width: 100%;
-  max-width: 480px;
+  max-width: 560px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 20px;
 }
 
 /* --- Header ------------------------------------------------------------ */
@@ -242,7 +242,7 @@ textarea {
   position: relative;
   background:
     radial-gradient(
-      ellipse 220px 240px at 50% 50%,
+      ellipse 240px 260px at 50% 50%,
       rgba(255, 220, 174, 0.7),
       transparent 70%
     ),
@@ -250,8 +250,8 @@ textarea {
   border: 1.5px solid var(--ink);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
-  padding: 22px 18px;
-  height: clamp(320px, 52vh, 400px);
+  padding: 24px 22px;
+  height: clamp(340px, 54vh, 440px);
   overflow: hidden;
   isolation: isolate;
 }
@@ -628,7 +628,7 @@ textarea {
   background: linear-gradient(180deg, var(--paper-light), #f7eccd);
   border: 1.5px solid var(--ink);
   border-radius: var(--radius-card);
-  padding: 18px 18px 20px;
+  padding: 20px 22px 22px;
   box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
@@ -652,7 +652,7 @@ textarea {
 
 .input-panel__textarea {
   width: 100%;
-  min-height: 100px;
+  min-height: 112px;
   resize: none;
   border: 1.5px solid var(--ink-soft);
   border-radius: var(--radius-md);
@@ -1181,10 +1181,10 @@ textarea {
 
 @media (min-width: 600px) {
   .app {
-    padding-top: 40px;
+    padding-top: 44px;
   }
   .stage {
-    height: 420px;
+    height: 460px;
   }
   .sandbag {
     width: 132px;
@@ -1195,8 +1195,8 @@ textarea {
     margin-left: -66px;
   }
   .stage__seal {
-    width: 70px;
-    height: 70px;
+    width: 72px;
+    height: 72px;
   }
   .stage__seal-num {
     font-size: 1.5rem;
