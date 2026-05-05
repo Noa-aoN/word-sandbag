@@ -239,27 +239,44 @@ function meow() {
   playNoiseLayer(c, master, now, bp, 0.06, 0.004, 0.045);
 }
 
-function hum() {
+function softTone(
+  c: AudioContext,
+  master: GainNode,
+  type: OscillatorType,
+  freq: number,
+  vol: number,
+  startAt: number,
+  attackSec: number,
+  durSec: number,
+) {
+  const osc = c.createOscillator();
+  const gain = c.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, startAt);
+  gain.gain.setValueAtTime(0, startAt);
+  gain.gain.linearRampToValueAtTime(vol, startAt + attackSec);
+  gain.gain.exponentialRampToValueAtTime(0.0006, startAt + durSec);
+  osc.connect(gain);
+  gain.connect(master);
+  osc.start(startAt);
+  osc.stop(startAt + durSec + 0.02);
+}
+
+function hugChord() {
   const c = getCtx();
   if (!c) return;
   ensureRunning(c);
   const master = getMaster(c);
   const now = c.currentTime;
 
-  const osc = c.createOscillator();
-  const gain = c.createGain();
-  osc.type = "triangle";
-  osc.frequency.setValueAtTime(220, now);
-  osc.frequency.linearRampToValueAtTime(180, now + 0.4);
+  // Warm major triad (root + major third + perfect fifth + octave) — bell-like hug
+  softTone(c, master, "sine", 392.0, 0.16, now, 0.12, 0.85); // G4 root
+  softTone(c, master, "sine", 493.88, 0.11, now + 0.04, 0.16, 0.78); // B4 major third
+  softTone(c, master, "sine", 587.33, 0.09, now + 0.06, 0.18, 0.72); // D5 fifth
+  softTone(c, master, "sine", 783.99, 0.06, now + 0.1, 0.22, 0.6); // G5 octave
 
-  gain.gain.setValueAtTime(0, now);
-  gain.gain.linearRampToValueAtTime(0.12, now + 0.08);
-  gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.55);
-
-  osc.connect(gain);
-  gain.connect(master);
-  osc.start(now);
-  osc.stop(now + 0.6);
+  // Sub layer for warmth
+  softTone(c, master, "triangle", 196.0, 0.08, now, 0.18, 0.7); // G3
 }
 
 function hookSwing() {
@@ -334,7 +351,7 @@ export function playImpact(kind: ImpactKind, power: PunchPower) {
       meow();
       return;
     case "crunch":
-      hum();
+      hugChord();
       return;
     case "tap":
       thump("light");

@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import type { ImpactKind, PunchPower } from "../types/punch";
 import burstSrc from "../assets/sandbag/burst.png";
+import heartSrc from "../assets/sandbag/heart.png";
 
 type Props = {
   hitKey: number;
@@ -69,6 +70,17 @@ export function ImpactEffect({ hitKey, power, kind, side, point }: Props) {
             initial={{ opacity: 0, scale: 0.4, rotate: -8 }}
             animate={{ opacity: [0.95, 0], scale: [0.5 * scale, 1.5 * scale], rotate: 12 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
+          />
+        )}
+        {kind === "crunch" && !reduce && (
+          <motion.img
+            className="impact__heart-img"
+            src={heartSrc}
+            alt=""
+            draggable={false}
+            initial={{ opacity: 0, scale: 0.4, rotate: -12 }}
+            animate={{ opacity: [0, 0.95, 0.7, 0], scale: [0.4, 1.1, 1.0, 1.2], rotate: [-12, 4, 8, 12] }}
+            transition={{ duration: 0.85, ease: "easeOut", times: [0, 0.25, 0.7, 1] }}
           />
         )}
         <span className="impact__text">{labelFor(kind, power)}</span>

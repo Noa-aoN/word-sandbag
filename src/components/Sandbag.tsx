@@ -110,14 +110,15 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
 
   useEffect(() => {
     if (hitKey === 0 || kind === "crunch" || kind === "tap") return;
-    const sideShift = side === 0 ? 0 : side * 18;
-    const xJitter = (Math.random() - 0.5) * 6;
+    const sideMag = kind === "hook" ? 28 : 18;
+    const sideShift = side === 0 ? 0 : side * sideMag;
+    const xJitter = (Math.random() - 0.5) * (kind === "hook" ? 4 : 6);
     const yJitter = (Math.random() - 0.5) * 14;
     const baseSize =
       kind === "cat"
         ? 0.4
         : kind === "hook"
-          ? 0.78
+          ? 0.82
           : kind === "upper"
             ? 0.6
             : POWER_DENT_SIZE[power];
@@ -193,15 +194,16 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
     const durMul = Math.min(1.4, 0.85 + amp * 0.15);
 
     if (kind === "upper") {
-      // Hit from below at center: vertical compression + brief forward bow.
-      // ScaleY squeezes (bag absorbs), ScaleX bulges, rotate slight forward.
+      // Uppercut: bag pushed up + tilts back (rotateX top forward), then settles.
+      // Slight scale changes simulate depth: bag closer at peak, smaller as it swings back.
       return {
         hitAnimate: {
-          scaleY: [1, 0.86 - amp * 0.02, 1.07 + amp * 0.01, 0.96, 1],
-          scaleX: [1, 1.07 + amp * 0.02, 0.94, 1.02, 1],
-          rotate: [0, -2 * amp, 1.5 * amp, -0.6 * amp, 0],
+          rotateX: [0, -22 * Math.min(1.4, amp), 8, -3, 0],
+          scale: [1, 1.05 + amp * 0.01, 0.96, 1.01, 1],
+          y: [0, -8 - amp * 2, -2, 0, 0],
+          rotate: 0,
         },
-        hitTransition: { duration: 0.7 * durMul, ease: "easeOut" as const },
+        hitTransition: { duration: 0.72 * durMul, ease: "easeOut" as const },
       };
     }
 
@@ -211,8 +213,8 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
       return {
         hitAnimate: {
           rotate: swayBase.rotate.map((v) => v * flip * amp * 1.25),
-          scaleY: [1, 0.97, 1.02, 0.99, 1],
-          scaleX: [1, 1.03, 0.98, 1.01, 1],
+          rotateX: [0, -3, 1, 0],
+          scale: 1,
         },
         hitTransition: { duration: swayBase.duration * durMul * 1.1, ease: "easeOut" as const },
       };
@@ -220,15 +222,16 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
 
     // punch / cat / tap
     if (side === 0) {
-      // Center hit: vertical compression rather than horizontal swing.
+      // Center body hit: bag pushed BACK (rotateX negative = top toward viewer, bottom away),
+      // recoils forward, settles. Scale slightly smaller at peak = depth cue.
       const sBase = kind === "cat" ? 0.55 : 1;
       return {
         hitAnimate: {
-          scaleY: [1, 0.93 - amp * 0.02 * sBase, 1.05 + amp * 0.01 * sBase, 0.97, 1],
-          scaleX: [1, 1.05 + amp * 0.02 * sBase, 0.96, 1.02, 1],
+          rotateX: [0, -16 * amp * sBase, 6 * amp * sBase, -2 * amp * sBase, 0],
+          scale: [1, 0.94 - amp * 0.015 * sBase, 1.02, 0.99, 1],
           rotate: 0,
         },
-        hitTransition: { duration: 0.55 * durMul, ease: "easeOut" as const },
+        hitTransition: { duration: 0.6 * durMul, ease: "easeOut" as const },
       };
     }
 
@@ -243,6 +246,39 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
     };
   }, [hitKey, kind, power, reduce, side, intensity]);
 
+  // Ground shadow scales with bag's "depth": bigger when bag is forward (close), smaller when back.
+  const { shadowAnimate, shadowTransition } = useMemo(() => {
+    if (hitKey === 0 || reduce) {
+      return { shadowAnimate: { scaleX: 1, opacity: 0.85 }, shadowTransition: { duration: 0 } };
+    }
+    const amp = Math.min(3, Math.max(0.9, intensity));
+    if (kind === "crunch") {
+      return {
+        shadowAnimate: { scaleX: [1, 0.9, 1.04, 1], opacity: [0.85, 0.95, 0.85, 0.85] },
+        shadowTransition: { duration: 0.55, ease: "easeOut" as const },
+      };
+    }
+    if (kind === "upper") {
+      return {
+        shadowAnimate: {
+          scaleX: [1, 0.78 - amp * 0.04, 0.9, 0.97, 1],
+          opacity: [0.85, 0.5, 0.7, 0.82, 0.85],
+        },
+        shadowTransition: { duration: 0.72, ease: "easeOut" as const },
+      };
+    }
+    if ((kind === "punch" || kind === "tap" || kind === "cat") && side === 0) {
+      return {
+        shadowAnimate: {
+          scaleX: [1, 1.14 + amp * 0.03, 0.94, 1.02, 1],
+          opacity: [0.85, 0.55, 0.8, 0.85, 0.85],
+        },
+        shadowTransition: { duration: 0.6, ease: "easeOut" as const },
+      };
+    }
+    return { shadowAnimate: { scaleX: 1, opacity: 0.85 }, shadowTransition: { duration: 0 } };
+  }, [hitKey, kind, side, intensity, reduce]);
+
   return (
     <motion.div
       ref={anchorRef}
@@ -255,8 +291,14 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
       onPanStart={interactive ? handlePanStart : undefined}
       onPan={interactive ? handlePan : undefined}
       onPanEnd={interactive ? handlePanEnd : undefined}
-      style={{ touchAction: "none" }}
+      style={{ touchAction: "none", perspective: "900px" }}
     >
+      <motion.div
+        className="sandbag-shadow"
+        animate={shadowAnimate}
+        transition={shadowTransition}
+        aria-hidden="true"
+      />
       <motion.div
         className="stage__sandbag-idle"
         animate={idleAnimate}

@@ -385,6 +385,26 @@ textarea {
   position: relative;
 }
 
+.sandbag-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: -22px;
+  transform: translateX(-50%);
+  width: 84%;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(20, 10, 4, 0.45) 0%,
+    rgba(20, 10, 4, 0.28) 45%,
+    transparent 75%
+  );
+  pointer-events: none;
+  z-index: 2;
+  will-change: transform, opacity;
+  filter: blur(2px);
+}
+
 .sandbag-img {
   display: block;
   width: 100%;
@@ -509,6 +529,27 @@ textarea {
   pointer-events: none;
   user-select: none;
   filter: drop-shadow(0 6px 14px rgba(229, 90, 55, 0.5));
+}
+
+.impact__heart-img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 70px;
+  height: auto;
+  margin-top: -36px;
+  margin-left: -35px;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 4px 10px rgba(229, 90, 55, 0.45));
+}
+
+@media (min-width: 600px) {
+  .impact__heart-img {
+    width: 88px;
+    margin-top: -45px;
+    margin-left: -44px;
+  }
 }
 
 @media (min-width: 600px) {
