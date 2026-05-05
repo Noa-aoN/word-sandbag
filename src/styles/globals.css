@@ -120,7 +120,7 @@ textarea {
 
 .app__inner {
   width: 100%;
-  max-width: 560px;
+  max-width: 760px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -239,10 +239,11 @@ textarea {
 /* --- Stage ------------------------------------------------------------- */
 
 .stage {
+  --bag-size: clamp(220px, 50%, 380px);
   position: relative;
   background:
     radial-gradient(
-      ellipse 240px 260px at 50% 50%,
+      ellipse 280px 300px at 50% 50%,
       rgba(255, 220, 174, 0.7),
       transparent 70%
     ),
@@ -250,8 +251,8 @@ textarea {
   border: 1.5px solid var(--ink);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
-  padding: 24px 22px;
-  height: clamp(340px, 54vh, 440px);
+  padding: 24px 24px;
+  height: clamp(380px, 56vh, 540px);
   overflow: hidden;
   isolation: isolate;
 }
@@ -261,33 +262,13 @@ textarea {
   left: 50%;
   bottom: 0;
   transform: translateX(-50%);
-  width: 142%;
-  height: 58%;
-  object-fit: cover;
-  object-position: bottom center;
+  width: 100%;
+  max-width: none;
+  height: auto;
   z-index: 1;
   pointer-events: none;
   user-select: none;
   filter: drop-shadow(0 14px 18px rgba(40, 26, 12, 0.32));
-}
-
-.chain-mount {
-  position: absolute;
-  top: -4px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 56px;
-  height: auto;
-  z-index: 2;
-  pointer-events: none;
-  user-select: none;
-  filter: drop-shadow(0 6px 8px rgba(40, 26, 12, 0.32));
-}
-
-@media (min-width: 600px) {
-  .chain-mount {
-    width: 64px;
-  }
 }
 
 .stage__corner-tag {
@@ -361,12 +342,12 @@ textarea {
 
 .stage__sandbag-anchor {
   position: absolute;
-  top: 22px;
+  top: 50%;
   left: 50%;
-  margin-top: 0;
-  margin-left: -140px;
-  width: 280px;
-  height: 280px;
+  width: var(--bag-size);
+  height: var(--bag-size);
+  margin-top: calc(var(--bag-size) / -2);
+  margin-left: calc(var(--bag-size) / -2);
   z-index: 3;
   border-radius: 18px;
   -webkit-tap-highlight-color: transparent;
@@ -446,7 +427,7 @@ textarea {
 
 .flying-char {
   position: absolute;
-  top: 162px;
+  top: 50%;
   left: 50%;
   font-family: var(--font-display);
   font-weight: 400;
@@ -480,7 +461,7 @@ textarea {
 
 .impact-wrap {
   position: absolute;
-  top: 162px;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
@@ -540,7 +521,7 @@ textarea {
 
 .flying-paw {
   position: absolute;
-  top: 162px;
+  top: 50%;
   left: 50%;
   width: 84px;
   height: auto;
@@ -562,13 +543,6 @@ textarea {
     width: 108px;
     margin-top: -54px;
     margin-left: -54px;
-    top: 212px;
-  }
-  .flying-char {
-    top: 212px;
-  }
-  .impact-wrap {
-    top: 212px;
   }
 }
 
@@ -1103,13 +1077,6 @@ textarea {
   }
   .stage {
     height: 560px;
-  }
-  .stage__sandbag-anchor {
-    top: 42px;
-    margin-top: 0;
-    margin-left: -170px;
-    width: 340px;
-    height: 340px;
   }
   .stage__seal {
     width: 72px;
