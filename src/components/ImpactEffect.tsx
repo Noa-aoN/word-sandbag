@@ -73,15 +73,33 @@ export function ImpactEffect({ hitKey, power, kind, side, point }: Props) {
           />
         )}
         {kind === "crunch" && !reduce && (
-          <motion.img
-            className="impact__heart-img"
-            src={heartSrc}
-            alt=""
-            draggable={false}
-            initial={{ opacity: 0, scale: 0.4, rotate: -12 }}
-            animate={{ opacity: [0, 0.95, 0.7, 0], scale: [0.4, 1.1, 1.0, 1.2], rotate: [-12, 4, 8, 12] }}
-            transition={{ duration: 0.85, ease: "easeOut", times: [0, 0.25, 0.7, 1] }}
-          />
+          <>
+            <motion.div
+              className="impact__aura"
+              initial={{ opacity: 0, scale: 0.35 }}
+              animate={{ opacity: [0, 0.7, 0.4, 0], scale: [0.35, 1.2, 1.6, 2.0] }}
+              transition={{ duration: 1.05, ease: "easeOut", times: [0, 0.25, 0.6, 1] }}
+            />
+            <motion.div
+              className="impact__aura impact__aura--inner"
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: [0, 0.85, 0], scale: [0.5, 1.0, 1.4] }}
+              transition={{ duration: 0.95, ease: "easeOut", times: [0, 0.4, 1] }}
+            />
+            <motion.img
+              className="impact__heart-img"
+              src={heartSrc}
+              alt=""
+              draggable={false}
+              initial={{ opacity: 0, scale: 0.4, rotate: -12 }}
+              animate={{
+                opacity: [0, 1, 0.85, 0],
+                scale: [0.4, 1.1, 1.05, 1.3],
+                rotate: [-12, 0, 6, 14],
+              }}
+              transition={{ duration: 1.0, ease: "easeOut", times: [0, 0.25, 0.7, 1] }}
+            />
+          </>
         )}
         <span className="impact__text">{labelFor(kind, power)}</span>
       </motion.div>

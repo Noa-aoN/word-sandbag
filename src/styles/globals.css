@@ -272,6 +272,28 @@ textarea {
   filter: drop-shadow(0 14px 18px rgba(40, 26, 12, 0.32));
 }
 
+.chain-mount {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 64px;
+  height: calc(50% - var(--bag-h) / 2 + 18px);
+  min-height: 28px;
+  object-fit: cover;
+  object-position: top center;
+  z-index: 2;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 4px 6px rgba(40, 26, 12, 0.35));
+}
+
+@media (min-width: 600px) {
+  .chain-mount {
+    width: 76px;
+  }
+}
+
 .stage__corner-tag {
   position: absolute;
   top: 18px;
@@ -535,20 +557,67 @@ textarea {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 70px;
+  width: 140px;
   height: auto;
-  margin-top: -36px;
-  margin-left: -35px;
+  margin-top: -72px;
+  margin-left: -70px;
   pointer-events: none;
   user-select: none;
-  filter: drop-shadow(0 4px 10px rgba(229, 90, 55, 0.45));
+  filter: drop-shadow(0 6px 14px rgba(229, 90, 55, 0.5));
+}
+
+.impact__aura {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 240px;
+  height: 240px;
+  margin-top: -120px;
+  margin-left: -120px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 196, 220, 0.65) 0%,
+    rgba(255, 218, 230, 0.42) 30%,
+    rgba(255, 230, 200, 0.18) 60%,
+    transparent 80%
+  );
+  pointer-events: none;
+  filter: blur(8px);
+  mix-blend-mode: screen;
+}
+
+.impact__aura--inner {
+  width: 160px;
+  height: 160px;
+  margin-top: -80px;
+  margin-left: -80px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 240, 230, 0.85) 0%,
+    rgba(255, 220, 230, 0.5) 35%,
+    transparent 75%
+  );
+  filter: blur(4px);
 }
 
 @media (min-width: 600px) {
   .impact__heart-img {
-    width: 88px;
-    margin-top: -45px;
-    margin-left: -44px;
+    width: 180px;
+    margin-top: -92px;
+    margin-left: -90px;
+  }
+  .impact__aura {
+    width: 320px;
+    height: 320px;
+    margin-top: -160px;
+    margin-left: -160px;
+  }
+  .impact__aura--inner {
+    width: 220px;
+    height: 220px;
+    margin-top: -110px;
+    margin-left: -110px;
   }
 }
 

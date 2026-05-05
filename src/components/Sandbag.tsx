@@ -111,7 +111,9 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
   useEffect(() => {
     if (hitKey === 0 || kind === "crunch" || kind === "tap") return;
     const sideMag = kind === "hook" ? 28 : 18;
-    const sideShift = side === 0 ? 0 : side * sideMag;
+    // Hook: dent appears on the side that received the force (opposite the swing direction)
+    const sideShift =
+      side === 0 ? 0 : kind === "hook" ? -side * sideMag : side * sideMag;
     const xJitter = (Math.random() - 0.5) * (kind === "hook" ? 4 : 6);
     const yJitter = (Math.random() - 0.5) * 14;
     const baseSize =
@@ -193,12 +195,16 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
     const amp = Math.min(3, Math.max(0.9, intensity));
     const durMul = Math.min(1.4, 0.85 + amp * 0.15);
 
-    if (kind === "upper") {
-      // Uppercut: bag pushed up + tilts back (rotateX top forward), then settles.
-      // Slight scale changes simulate depth: bag closer at peak, smaller as it swings back.
+    // Uppercut OR center body hit: bag pushed up + tilts back (rotateX),
+    // slight scale + y shift convey depth without scaleX/Y stretching.
+    const isUpperLike =
+      kind === "upper" ||
+      (side === 0 && (kind === "punch" || kind === "tap" || kind === "cat"));
+    if (isUpperLike) {
+      const intensityCap = Math.min(1.4, amp);
       return {
         hitAnimate: {
-          rotateX: [0, -22 * Math.min(1.4, amp), 8, -3, 0],
+          rotateX: [0, -22 * intensityCap, 8, -3, 0],
           scale: [1, 1.05 + amp * 0.01, 0.96, 1.01, 1],
           y: [0, -8 - amp * 2, -2, 0, 0],
           rotate: 0,
@@ -220,21 +226,7 @@ export function Sandbag({ hitKey, power, kind, side, intensity, onTap }: Props) 
       };
     }
 
-    // punch / cat / tap
-    if (side === 0) {
-      // Center body hit: bag pushed BACK (rotateX negative = top toward viewer, bottom away),
-      // recoils forward, settles. Scale slightly smaller at peak = depth cue.
-      const sBase = kind === "cat" ? 0.55 : 1;
-      return {
-        hitAnimate: {
-          rotateX: [0, -16 * amp * sBase, 6 * amp * sBase, -2 * amp * sBase, 0],
-          scale: [1, 0.94 - amp * 0.015 * sBase, 1.02, 0.99, 1],
-          rotate: 0,
-        },
-        hitTransition: { duration: 0.6 * durMul, ease: "easeOut" as const },
-      };
-    }
-
+    // Side hits (punch / cat / tap with side ≠ 0)
     const base = kind === "cat" ? catSwayByPower[power] : punchSwayByPower[power];
     const flip = side === -1 ? -1 : 1;
     return {

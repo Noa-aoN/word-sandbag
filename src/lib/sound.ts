@@ -216,32 +216,55 @@ function meow() {
   const master = getMaster(c);
   const now = c.currentTime;
 
+  // Vocal source: sawtooth carries harmonics that pass through formant filters
   const osc = c.createOscillator();
+  osc.type = "sawtooth";
+  // にゃーん contour: low → rise → dip → rise → fall
+  osc.frequency.setValueAtTime(420, now);
+  osc.frequency.linearRampToValueAtTime(720, now + 0.08);
+  osc.frequency.linearRampToValueAtTime(620, now + 0.18);
+  osc.frequency.linearRampToValueAtTime(760, now + 0.3);
+  osc.frequency.linearRampToValueAtTime(360, now + 0.46);
+
+  // Two formant bandpasses simulate vocal tract (vowel-like)
+  const f1 = c.createBiquadFilter();
+  f1.type = "bandpass";
+  f1.frequency.setValueAtTime(900, now);
+  f1.Q.setValueAtTime(4.5, now);
+
+  const f2 = c.createBiquadFilter();
+  f2.type = "bandpass";
+  f2.frequency.setValueAtTime(2400, now);
+  f2.Q.setValueAtTime(3, now);
+
   const gain = c.createGain();
-  osc.type = "sine";
-  osc.frequency.setValueAtTime(720, now);
-  osc.frequency.linearRampToValueAtTime(420, now + 0.13);
-  osc.frequency.linearRampToValueAtTime(560, now + 0.24);
-
   gain.gain.setValueAtTime(0, now);
-  gain.gain.linearRampToValueAtTime(0.18, now + 0.02);
-  gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.32);
+  gain.gain.linearRampToValueAtTime(0.18, now + 0.04);
+  gain.gain.linearRampToValueAtTime(0.16, now + 0.32);
+  gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.55);
 
-  osc.connect(gain);
+  osc.connect(f1);
+  f1.connect(f2);
+  f2.connect(gain);
   gain.connect(master);
   osc.start(now);
-  osc.stop(now + 0.34);
+  osc.stop(now + 0.58);
 
-  const bp = c.createBiquadFilter();
-  bp.type = "bandpass";
-  bp.frequency.setValueAtTime(900, now);
-  bp.Q.setValueAtTime(1.2, now);
-  playNoiseLayer(c, master, now, bp, 0.06, 0.004, 0.045);
+  // Vibrato (~7Hz) on pitch for natural mew warble
+  const lfo = c.createOscillator();
+  const lfoGain = c.createGain();
+  lfo.type = "sine";
+  lfo.frequency.setValueAtTime(7, now);
+  lfoGain.gain.setValueAtTime(18, now);
+  lfo.connect(lfoGain);
+  lfoGain.connect(osc.frequency);
+  lfo.start(now);
+  lfo.stop(now + 0.58);
 }
 
 function softTone(
   c: AudioContext,
-  master: GainNode,
+  destination: AudioNode,
   type: OscillatorType,
   freq: number,
   vol: number,
@@ -257,7 +280,7 @@ function softTone(
   gain.gain.linearRampToValueAtTime(vol, startAt + attackSec);
   gain.gain.exponentialRampToValueAtTime(0.0006, startAt + durSec);
   osc.connect(gain);
-  gain.connect(master);
+  gain.connect(destination);
   osc.start(startAt);
   osc.stop(startAt + durSec + 0.02);
 }
@@ -269,14 +292,30 @@ function hugChord() {
   const master = getMaster(c);
   const now = c.currentTime;
 
-  // Warm major triad (root + major third + perfect fifth + octave) — bell-like hug
-  softTone(c, master, "sine", 392.0, 0.16, now, 0.12, 0.85); // G4 root
-  softTone(c, master, "sine", 493.88, 0.11, now + 0.04, 0.16, 0.78); // B4 major third
-  softTone(c, master, "sine", 587.33, 0.09, now + 0.06, 0.18, 0.72); // D5 fifth
-  softTone(c, master, "sine", 783.99, 0.06, now + 0.1, 0.22, 0.6); // G5 octave
+  // Soft lowpass + gentle gain stage to keep the tones airy and round
+  const bus = c.createGain();
+  bus.gain.value = 1;
+  const lp = c.createBiquadFilter();
+  lp.type = "lowpass";
+  lp.frequency.setValueAtTime(1800, now);
+  lp.Q.setValueAtTime(0.7, now);
+  bus.connect(lp);
+  lp.connect(master);
 
-  // Sub layer for warmth
-  softTone(c, master, "triangle", 196.0, 0.08, now, 0.18, 0.7); // G3
+  // Pad layer: slow attack pad with two octaves of root for warmth
+  softTone(c, bus, "sine", 196.0, 0.1, now, 0.32, 1.4); // G3 sub
+  softTone(c, bus, "sine", 392.0, 0.13, now, 0.28, 1.4); // G4 root
+
+  // Major chord on top, slightly delayed for cascade ("welcome hug")
+  softTone(c, bus, "sine", 493.88, 0.085, now + 0.08, 0.32, 1.2); // B4 third
+  softTone(c, bus, "sine", 587.33, 0.07, now + 0.14, 0.34, 1.05); // D5 fifth
+  softTone(c, bus, "sine", 783.99, 0.045, now + 0.22, 0.36, 0.9); // G5 octave
+
+  // Shimmering top for sparkle
+  softTone(c, bus, "sine", 1175.0, 0.025, now + 0.32, 0.4, 0.7); // D6 high
+
+  // Soft "breath" of triangle bass under the pad
+  softTone(c, bus, "triangle", 98.0, 0.06, now, 0.4, 1.3); // G2 deep
 }
 
 function hookSwing() {
