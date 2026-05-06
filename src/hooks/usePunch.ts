@@ -43,10 +43,17 @@ const STRENGTH_MIN = 0.7;
 const STRENGTH_MAX = 1.8;
 const STRENGTH_DEFAULT = 1.0;
 
-function strengthBumps(s: number): number {
-  if (s >= 1.65) return 2;
-  if (s >= 1.25) return 1;
-  return 0;
+// 強度 (strength) は「言葉パンチ」の発動 kind を切り替える階段:
+//   弱め (~0.7)  → 通常の punch
+//   ふつう (~1.0) → upper (アッパー)
+//   強め (~1.4)  → hook (フック)
+//   全力 (~1.8)  → kick (キック)
+// punch 以外で発動された kind (cat / cash / crunch) はそのまま尊重する。
+function strengthToPunchKind(s: number): PunchKind {
+  if (s >= 1.65) return "kick";
+  if (s >= 1.25) return "hook";
+  if (s >= 0.85) return "upper";
+  return "punch";
 }
 
 const INTENSITY_MIN = 1.0;
@@ -217,23 +224,31 @@ export function usePunch() {
       const trimmed = sanitizeInput(content);
       if (trimmed.length === 0) return;
 
+      const effectiveKind: PunchKind =
+        kind === "punch" ? strengthToPunchKind(strengthRef.current) : kind;
+
       let power: PunchPower;
-      if (kind === "crunch") {
+      if (effectiveKind === "crunch") {
         power = "light";
-      } else if (kind === "cat") {
+      } else if (effectiveKind === "cat") {
         power = "normal";
+      } else if (
+        effectiveKind === "upper" ||
+        effectiveKind === "hook" ||
+        effectiveKind === "kick"
+      ) {
+        // 強め以上の置換 kind は常に heavy 扱い (アッパー/フック/キックボタンと揃える)
+        power = "heavy";
       } else {
         const base = classifyPower(trimmed);
         power = isEmphasized(trimmed) ? bumpPower(base) : base;
-        const bumps = strengthBumps(strengthRef.current);
-        for (let i = 0; i < bumps; i++) power = bumpPower(power);
       }
 
       const word: FlyingWord = {
         id: nextId(),
         text: trimmed,
         power,
-        kind,
+        kind: effectiveKind,
         emphasized: isEmphasized(trimmed),
         speed,
         side: forcedSide,
@@ -318,9 +333,7 @@ export function usePunch() {
       setHitSide(side);
       setHitCount((c) => c + 1);
       setHitKey((k) => k + 1);
-      setHitIntensity((prev) =>
-        Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 0.6 * strengthRef.current),
-      );
+      setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 0.6));
       scheduleIntensityDecay();
       showMessage(pickRandom(TAP_MESSAGES) ?? "", TAP_MESSAGE_DURATION_MS);
       if (soundOnRef.current) playImpact("tap", "light");
@@ -337,9 +350,7 @@ export function usePunch() {
     setHitSide(side);
     setHitCount((c) => c + 1);
     setHitKey((k) => k + 1);
-    setHitIntensity((prev) =>
-      Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 1.6 * strengthRef.current),
-    );
+    setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 1.6));
     scheduleIntensityDecay();
     if (soundOnRef.current) playImpact("hook", "heavy");
     vibrate("heavy");
@@ -352,9 +363,7 @@ export function usePunch() {
     setHitSide(0);
     setHitCount((c) => c + 1);
     setHitKey((k) => k + 1);
-    setHitIntensity((prev) =>
-      Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 1.4 * strengthRef.current),
-    );
+    setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 1.4));
     scheduleIntensityDecay();
     if (soundOnRef.current) playImpact("upper", "heavy");
     vibrate("heavy");
@@ -368,9 +377,7 @@ export function usePunch() {
     setHitSide(side);
     setHitCount((c) => c + 1);
     setHitKey((k) => k + 1);
-    setHitIntensity((prev) =>
-      Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 1.6 * strengthRef.current),
-    );
+    setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 1.6));
     scheduleIntensityDecay();
     if (soundOnRef.current) playImpact("kick", "heavy");
     vibrate("heavy");
@@ -391,9 +398,7 @@ export function usePunch() {
           intensityDecayRef.current = null;
         }
       } else {
-        setHitIntensity((prev) =>
-          Math.min(INTENSITY_MAX, prev + INTENSITY_INC * strengthRef.current),
-        );
+        setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC));
         scheduleIntensityDecay();
       }
 
