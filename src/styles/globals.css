@@ -128,122 +128,96 @@ textarea {
 }
 
 .app__layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-areas:
-    "stage"
-    "text"
-    "left"
-    "right";
+  display: flex;
+  flex-direction: column;
   gap: 16px;
 }
 
-.app__layout > .stage {
-  grid-area: stage;
+/* mobile (default flex-column) では中央列 → 左パネル → 右パネルの順 */
+.app__layout > .app__center {
+  order: 1;
 }
-
-.app__layout > .text-punch {
-  grid-area: text;
-}
-
 .app__layout > .side-panel--left {
-  grid-area: left;
+  order: 2;
+}
+.app__layout > .side-panel--right {
+  order: 3;
 }
 
-.app__layout > .side-panel--right {
-  grid-area: right;
+.app__center {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
 }
 
 @media (min-width: 980px) {
-  /* デスクトップ: viewport に固定収まり。各パネルは flex/grid で伸縮。 */
+  /* デスクトップ: 全体スクロールで自然な縦フロー (固定 fit はしない)。
+     ステージは aspect-ratio 7/5 を保ったまま中央カラム幅で伸縮。
+     パネル個別に内部スクロールはせず、入りきらなければページが縦スクロール。 */
+
   .app {
-    position: fixed;
-    inset: 0;
-    min-height: 0;
-    height: 100dvh;
-    padding: 12px;
-    overflow: hidden;
+    position: relative;
+    min-height: 100dvh;
+    height: auto;
+    padding: 14px 16px 24px;
+    overflow: visible;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0;
+    gap: 12px;
   }
 
   .app__inner {
-    width: min(1180px, 100%);
-    max-width: none;
-    height: 100%;
-    min-height: 0;
-    flex: 1 1 auto;
-    gap: clamp(6px, 1.2dvh, 14px);
-  }
-
-  /* 看板は中央寄せで控えめな細さ (中央カラムと同じ幅にしない) */
-  .header {
-    align-self: center;
     width: 100%;
-    padding: 4px 0 2px;
+    max-width: 1180px;
+    height: auto;
+    min-height: 0;
     flex: 0 0 auto;
-  }
-
-  .header__sign {
-    max-width: 520px;
-    margin: 0 auto;
-  }
-
-  /* レイアウトは残りの縦スペースを埋める */
-  .app__layout {
-    flex: 1 1 auto;
-    min-height: 0;
-    grid-template-columns:
-      clamp(180px, 18vw, 230px)
-      minmax(0, 1fr)
-      clamp(180px, 18vw, 230px);
-    grid-template-rows: minmax(0, 1fr) auto;
-    grid-template-areas:
-      "left stage  right"
-      "left text   right";
     gap: 14px;
-    align-items: stretch;
   }
 
-  /* 中央上のステージはグリッドセル (1fr) を埋める */
+  /* レイアウトは横 3 カラムに切り替え */
+  .app__layout {
+    flex-direction: row;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .app__layout > .side-panel--left,
+  .app__layout > .side-panel--right {
+    flex: 0 0 clamp(190px, 17vw, 230px);
+    order: 0;
+  }
+
+  .app__layout > .app__center {
+    flex: 1 1 auto;
+    order: 0;
+    min-width: 0;
+    gap: 14px;
+  }
+
+  /* ステージ: 中央カラム幅で aspect-ratio を維持。高さは width 比例で
+     決まるため、viewport が狭くても比率を崩さない。 */
   .stage {
-    height: 100%;
+    width: 100%;
+    height: auto;
     min-height: 0;
+    aspect-ratio: 7 / 5;
   }
 
-  /* 左右パネル: 縦長コンテンツは内部スクロール */
+  /* 左右パネル: 内部スクロールはしない。内容が縦長なら全体スクロールで対応 */
   .side-panel {
     min-height: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-width: thin;
+    overflow: visible;
   }
 
-  .side-panel::-webkit-scrollbar {
-    width: 6px;
-  }
-  .side-panel::-webkit-scrollbar-thumb {
-    background: var(--ink-mute);
-    border-radius: 3px;
-  }
-  .side-panel::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  /* 中央下のテキスト入力パネルはコンパクトに */
+  /* 中央下のテキスト入力パネルはやや控えめに */
   .text-punch {
-    padding: 12px 16px 14px;
+    padding: 14px 18px 16px;
   }
   .text-punch::after {
-    inset: 6px;
-  }
-
-  /* privacy / footer はぴったり下に */
-  .privacy-note,
-  .app-footer {
-    flex: 0 0 auto;
+    inset: 7px;
   }
 }
 
@@ -371,7 +345,7 @@ textarea {
 
 .header {
   text-align: center;
-  padding: 14px 4px 6px;
+  padding: 4px 4px 2px;
 }
 
 .header__sign {
@@ -379,10 +353,10 @@ textarea {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 22px 28px 18px;
+  gap: 6px;
+  padding: 12px 20px 10px;
   margin: 0 auto;
-  max-width: 760px;
+  max-width: 420px;
   background:
     linear-gradient(
       180deg,
@@ -457,11 +431,11 @@ textarea {
 
 /* タイトル (太い書道風) */
 .header__title {
-  margin: 6px 0 0;
+  margin: 4px 0 0;
   padding: 0;
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: clamp(2.2rem, 8.6vw, 3.2rem);
+  font-size: clamp(1.4rem, 3.4vw, 1.85rem);
   line-height: 1.04;
   letter-spacing: 0.02em;
   color: var(--ink);
@@ -493,9 +467,9 @@ textarea {
 
 /* キャッチコピー */
 .header__catch {
-  margin: 2px 0 4px;
+  margin: 2px 0 2px;
   font-family: var(--font-serif);
-  font-size: 0.96rem;
+  font-size: 0.82rem;
   font-weight: 500;
   color: var(--ink);
   letter-spacing: 0.04em;
@@ -1567,10 +1541,11 @@ textarea {
   }
 }
 
-/* デスクトップ fit-to-window: stage はグリッドセル (1fr) に伸縮 */
+/* デスクトップ: stage は aspect-ratio で width に追従 */
 @media (min-width: 980px) {
   .stage {
-    height: 100%;
+    height: auto;
     min-height: 0;
+    aspect-ratio: 7 / 5;
   }
 }
