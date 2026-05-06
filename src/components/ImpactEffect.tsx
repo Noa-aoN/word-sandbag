@@ -14,19 +14,14 @@ type Props = {
   strength: number;
 };
 
-// power × strength tier (3 × 4) で擬音を細かく出し分ける。
-//   行: 0=light, 1=normal, 2=heavy (=strength で底上げされた後の power)
+// クリックパンチ / 言葉パンチ / プリセットパンチで共通の擬音テーブル。
+//   行: 0=light, 1=normal, 2=heavy (= strength で底上げされた後の power)
 //   列: 0=弱め, 1=ふつう, 2=強め, 3=全力 (strength tier)
-const PUNCH_LABEL_TABLE: ReadonlyArray<readonly [string, string, string, string]> = [
-  ["ポン", "ポンッ", "ポーン", "ポンッ!!"],
-  ["バシ", "バシッ", "バシーン", "バシン!!"],
-  ["ドゴ", "ドゴッ", "ドゴーン", "ドガーン!!"],
-] as const;
-
-const TAP_LABEL_TABLE: ReadonlyArray<readonly [string, string, string, string]> = [
-  ["ポン", "ポンッ", "ポーン", "ポンッ!"],
-  ["ポンッ", "バシ", "バシッ", "バシン!"],
-  ["バシッ", "バシン", "ドゴッ", "ドガッ!!"],
+// 既定 (light × ふつう) で「バシッ」になるよう調整。
+const IMPACT_LABEL_TABLE: ReadonlyArray<readonly [string, string, string, string]> = [
+  ["ポン", "バシッ", "ドゴッ", "ドガッ!!"],
+  ["バシ", "バシン", "ドゴーン", "ドガーン!!"],
+  ["ドゴ", "ドゴッ", "ドガン", "ドガーン!!!"],
 ] as const;
 
 const sizeByPower: Record<PunchPower, number> = {
@@ -49,8 +44,7 @@ function labelFor(kind: ImpactKind, power: PunchPower, strength: number): string
   if (kind === "kick") return "ドガッ";
   if (kind === "cash") return "ドサッ";
   const tier = strengthTier(strength);
-  const table = kind === "tap" ? TAP_LABEL_TABLE : PUNCH_LABEL_TABLE;
-  return table[powerIdx(power)][tier];
+  return IMPACT_LABEL_TABLE[powerIdx(power)][tier];
 }
 
 export function ImpactEffect({ hitKey, power, kind, side, point, strength }: Props) {
