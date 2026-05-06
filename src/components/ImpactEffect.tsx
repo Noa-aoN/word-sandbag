@@ -18,6 +18,12 @@ const PUNCH_LABEL: Record<PunchPower, string> = {
   heavy: "ドゴッ",
 };
 
+const TAP_LABEL: Record<PunchPower, string> = {
+  light: "ポン",
+  normal: "ポンッ",
+  heavy: "バシッ",
+};
+
 const sizeByPower: Record<PunchPower, number> = {
   light: 0.85,
   normal: 1,
@@ -27,7 +33,7 @@ const sizeByPower: Record<PunchPower, number> = {
 function labelFor(kind: ImpactKind, power: PunchPower): string {
   if (kind === "cat") return "にゃっ";
   if (kind === "crunch") return "ぎゅっ";
-  if (kind === "tap") return "ポン";
+  if (kind === "tap") return TAP_LABEL[power];
   if (kind === "hook") return "ガッ";
   if (kind === "upper") return "ドカッ";
   if (kind === "kick") return "ドガッ";

@@ -18,6 +18,7 @@ import type { BagState, ImpactKind, PunchPower } from "../types/punch";
 import sandbagSrc from "../assets/sandbag/sandbag.png";
 import dentMarkSrc from "../assets/sandbag/dent-mark.png";
 import { tapPointToBagPercent } from "../lib/tap-position";
+import { strengthDentMul } from "../lib/strength";
 
 type Props = {
   hitKey: number;
@@ -26,6 +27,7 @@ type Props = {
   side: number;
   intensity: number;
   bagState: BagState;
+  strength: number;
   onTap?: (side: number, clientPoint: { x: number; y: number } | null) => void;
 };
 
@@ -66,6 +68,7 @@ export function Sandbag({
   side,
   intensity,
   bagState,
+  strength,
   onTap,
 }: Props) {
   const reduce = useReducedMotion();
@@ -114,7 +117,7 @@ export function Sandbag({
     const anchor = anchorRef.current;
     const rect = anchor ? anchor.getBoundingClientRect() : null;
     const { xPct, yPct, side: tapSide } = tapPointToBagPercent(point, rect);
-    pushDent(xPct, yPct, 0.4);
+    pushDent(xPct, yPct, 0.4 * strengthDentMul(strength));
     onTap(tapSide, point);
   };
 
