@@ -54,7 +54,7 @@ export function SandbagStage({
     setTowelInstance(towelKey);
     const t = window.setTimeout(() => {
       setTowelInstance(null);
-    }, 1100);
+    }, 1200);
     return () => window.clearTimeout(t);
   }, [towelKey]);
 

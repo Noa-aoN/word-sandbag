@@ -12,22 +12,34 @@ type Props = {
   speed: number;
   onSpeedChange: (v: number) => void;
   speedRange: { min: number; max: number; step: number };
+  strength: number;
+  onStrengthChange: (v: number) => void;
+  strengthRange: { min: number; max: number; step: number };
   soundOn: boolean;
   onToggleSound: () => void;
 };
 
-const SPEED_TIERS: ReadonlyArray<{ label: string; value: number }> = [
+type Tier = { label: string; value: number };
+
+const SPEED_TIERS: ReadonlyArray<Tier> = [
   { label: "ゆっくり", value: 1.0 },
   { label: "ふつう", value: 1.6 },
   { label: "はやい", value: 2.0 },
   { label: "全力", value: 2.4 },
 ];
 
-function nearestTierIndex(current: number): number {
+const STRENGTH_TIERS: ReadonlyArray<Tier> = [
+  { label: "弱め", value: 0.7 },
+  { label: "ふつう", value: 1.0 },
+  { label: "強め", value: 1.4 },
+  { label: "全力", value: 1.8 },
+];
+
+function nearestTierIndex(tiers: ReadonlyArray<Tier>, current: number): number {
   let bestIdx = 0;
   let bestDist = Infinity;
-  for (let i = 0; i < SPEED_TIERS.length; i++) {
-    const d = Math.abs(SPEED_TIERS[i].value - current);
+  for (let i = 0; i < tiers.length; i++) {
+    const d = Math.abs(tiers[i].value - current);
     if (d < bestDist) {
       bestDist = d;
       bestIdx = i;
@@ -47,10 +59,14 @@ export function SkillPanel({
   speed,
   onSpeedChange,
   speedRange: _speedRange,
+  strength,
+  onStrengthChange,
+  strengthRange: _strengthRange,
   soundOn,
   onToggleSound,
 }: Props) {
-  const activeTier = nearestTierIndex(speed);
+  const activeSpeedTier = nearestTierIndex(SPEED_TIERS, speed);
+  const activeStrengthTier = nearestTierIndex(STRENGTH_TIERS, strength);
 
   return (
     <aside className="side-panel side-panel--right" aria-label="右パネル">
@@ -77,9 +93,26 @@ export function SkillPanel({
               <button
                 key={t.label}
                 type="button"
-                className={`speed-tier__btn${i === activeTier ? " speed-tier__btn--on" : ""}`}
+                className={`speed-tier__btn${i === activeSpeedTier ? " speed-tier__btn--on" : ""}`}
                 onClick={() => onSpeedChange(t.value)}
-                aria-pressed={i === activeTier}
+                aria-pressed={i === activeSpeedTier}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="speed-tier">
+          <span className="speed-tier__label">パンチ強度</span>
+          <div className="speed-tier__grid" role="group" aria-label="パンチ強度">
+            {STRENGTH_TIERS.map((t, i) => (
+              <button
+                key={t.label}
+                type="button"
+                className={`speed-tier__btn${i === activeStrengthTier ? " speed-tier__btn--on" : ""}`}
+                onClick={() => onStrengthChange(t.value)}
+                aria-pressed={i === activeStrengthTier}
               >
                 {t.label}
               </button>

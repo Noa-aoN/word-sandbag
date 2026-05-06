@@ -32,15 +32,13 @@ export function TowelOverlay() {
         alt=""
         draggable={false}
         className="towel-overlay__img"
-        initial={{ x: "-180%", y: "-30%", rotate: -18, scale: 0.95, opacity: 0 }}
+        initial={{ x: "-220%", y: "-30%", rotate: -12 }}
         animate={{
-          x: ["-180%", "-50%", "120%"],
-          y: ["-30%", "-58%", "-30%"],
-          rotate: [-18, 6, 24],
-          scale: [0.95, 1.05, 0.95],
-          opacity: [0, 1, 0.85],
+          x: "260%",
+          y: ["-30%", "-55%", "-30%"],
+          rotate: 32,
         }}
-        transition={{ duration: 1.0, times: [0, 0.45, 1], ease: "easeInOut" }}
+        transition={{ duration: 1.0, ease: "linear" }}
       />
     </motion.div>
   );
