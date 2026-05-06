@@ -707,7 +707,7 @@ export function playImpact(kind: ImpactKind, power: PunchPower) {
       hugChord();
       return;
     case "tap":
-      thump("light");
+      thump(power);
       return;
     case "hook":
       hookSwing();

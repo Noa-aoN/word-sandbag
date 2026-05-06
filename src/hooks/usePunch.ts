@@ -43,17 +43,22 @@ const STRENGTH_MIN = 0.7;
 const STRENGTH_MAX = 1.8;
 const STRENGTH_DEFAULT = 1.0;
 
-// 強度 (strength) は「言葉パンチ」の発動 kind を切り替える階段:
-//   弱め (~0.7)  → 通常の punch
-//   ふつう (~1.0) → upper (アッパー)
-//   強め (~1.4)  → hook (フック)
-//   全力 (~1.8)  → kick (キック)
-// punch 以外で発動された kind (cat / cash / crunch) はそのまま尊重する。
-function strengthToPunchKind(s: number): PunchKind {
-  if (s >= 1.65) return "kick";
-  if (s >= 1.25) return "hook";
-  if (s >= 0.85) return "upper";
-  return "punch";
+// 強度 (strength) は「凹みの大きさ・効果音・揺れ」の重さを底上げするだけで、
+// kind や着弾位置は弄らない (それらは入力 / クリック位置で決まる)。
+//   弱め (~0.7)  → 据え置き、揺れ控えめ
+//   ふつう (~1.0) → 標準
+//   強め (~1.4)  → power +1段、揺れ強め
+//   全力 (~1.8)  → power +2段、揺れ最大
+function strengthBumps(s: number): number {
+  if (s >= 1.65) return 2;
+  if (s >= 1.25) return 1;
+  return 0;
+}
+function strengthIntensityMul(s: number): number {
+  if (s >= 1.65) return 1.6;
+  if (s >= 1.25) return 1.3;
+  if (s >= 0.85) return 1.0;
+  return 0.7;
 }
 
 const INTENSITY_MIN = 1.0;
@@ -224,31 +229,24 @@ export function usePunch() {
       const trimmed = sanitizeInput(content);
       if (trimmed.length === 0) return;
 
-      const effectiveKind: PunchKind =
-        kind === "punch" ? strengthToPunchKind(strengthRef.current) : kind;
-
       let power: PunchPower;
-      if (effectiveKind === "crunch") {
+      if (kind === "crunch") {
         power = "light";
-      } else if (effectiveKind === "cat") {
+      } else if (kind === "cat") {
         power = "normal";
-      } else if (
-        effectiveKind === "upper" ||
-        effectiveKind === "hook" ||
-        effectiveKind === "kick"
-      ) {
-        // 強め以上の置換 kind は常に heavy 扱い (アッパー/フック/キックボタンと揃える)
-        power = "heavy";
       } else {
         const base = classifyPower(trimmed);
         power = isEmphasized(trimmed) ? bumpPower(base) : base;
+        // 強度で power 段階を底上げ (kind / 位置は変えない)
+        const bumps = strengthBumps(strengthRef.current);
+        for (let i = 0; i < bumps; i++) power = bumpPower(power);
       }
 
       const word: FlyingWord = {
         id: nextId(),
         text: trimmed,
         power,
-        kind: effectiveKind,
+        kind,
         emphasized: isEmphasized(trimmed),
         speed,
         side: forcedSide,
@@ -329,48 +327,21 @@ export function usePunch() {
     (side: number = 0) => {
       if (bagStateRef.current !== "active" || hitCountRef.current >= BREAK_AT) return;
       const s = strengthRef.current;
-
-      // 弱め: 通常のクリックパンチ (既存の tap)
-      if (s < 0.85) {
-        setHitPower("light");
-        setHitKind("tap");
-        setHitSide(side);
-        setHitCount((c) => c + 1);
-        setHitKey((k) => k + 1);
-        setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 0.6));
-        scheduleIntensityDecay();
-        showMessage(pickRandom(TAP_MESSAGES) ?? "", TAP_MESSAGE_DURATION_MS);
-        if (soundOnRef.current) playImpact("tap", "light");
-        vibrate("light");
-        return;
-      }
-
-      // ふつう以上: 専用ボタンと同じ重い演出にクリック位置の side を反映
-      let kind: PunchKind;
-      let resolvedSide: number;
-      let intensityMul: number;
-      if (s >= 1.65) {
-        kind = "kick";
-        resolvedSide = side === 0 ? (Math.random() < 0.5 ? -1 : 1) : side;
-        intensityMul = 1.6;
-      } else if (s >= 1.25) {
-        kind = "hook";
-        resolvedSide = side === 0 ? (Math.random() < 0.5 ? -1 : 1) : side;
-        intensityMul = 1.6;
-      } else {
-        kind = "upper";
-        resolvedSide = 0;
-        intensityMul = 1.4;
-      }
-      setHitPower("heavy");
-      setHitKind(kind);
-      setHitSide(resolvedSide);
+      let power: PunchPower = "light";
+      const bumps = strengthBumps(s);
+      for (let i = 0; i < bumps; i++) power = bumpPower(power);
+      setHitPower(power);
+      setHitKind("tap");
+      setHitSide(side);
       setHitCount((c) => c + 1);
       setHitKey((k) => k + 1);
-      setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC * intensityMul));
+      setHitIntensity((prev) =>
+        Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 0.6 * strengthIntensityMul(s)),
+      );
       scheduleIntensityDecay();
-      if (soundOnRef.current) playImpact(kind, "heavy");
-      vibrate("heavy");
+      showMessage(pickRandom(TAP_MESSAGES) ?? "", TAP_MESSAGE_DURATION_MS);
+      if (soundOnRef.current) playImpact("tap", power);
+      vibrate(power);
     },
     [showMessage, scheduleIntensityDecay],
   );
@@ -431,7 +402,9 @@ export function usePunch() {
           intensityDecayRef.current = null;
         }
       } else {
-        setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC));
+        setHitIntensity((prev) =>
+          Math.min(INTENSITY_MAX, prev + INTENSITY_INC * strengthIntensityMul(strengthRef.current)),
+        );
         scheduleIntensityDecay();
       }
 
