@@ -16,7 +16,8 @@
   --radius-card: 22px;
   --radius-md: 14px;
   --radius-sm: 8px;
-  --font-display: "Reggae One", "Zen Maru Gothic", system-ui, sans-serif;
+  --font-display: "Yuji Syuku", "Reggae One", "Zen Maru Gothic", system-ui, sans-serif;
+  --font-serif: "Shippori Mincho", "Yu Mincho", "Hiragino Mincho ProN", serif;
   --font-body: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans",
     system-ui, sans-serif;
   --font-mono: "Syne Mono", "Courier New", monospace;
@@ -285,58 +286,204 @@ textarea {
   outline-offset: 3px;
 }
 
-/* --- Header ------------------------------------------------------------ */
+/* --- Header (和紙ポスター × 朱印) -------------------------------------- */
 
 .header {
   text-align: center;
+  padding: 18px 4px 8px;
+}
+
+.header__board {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 4px 4px 4px;
+  gap: 14px;
+  padding: 30px 28px 24px;
+  margin: 0 auto;
+  max-width: 760px;
+  background:
+    radial-gradient(
+      ellipse 480px 240px at 50% 20%,
+      rgba(255, 246, 214, 0.95),
+      transparent 75%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(122, 88, 44, 0.05) 0,
+      rgba(122, 88, 44, 0.05) 1px,
+      transparent 1px,
+      transparent 9px
+    ),
+    linear-gradient(180deg, #faf0d6 0%, #f1dfb1 100%);
+  border: 1.5px solid var(--ink);
+  border-radius: 4px;
+  box-shadow:
+    2px 3px 0 var(--ink),
+    0 22px 28px -16px rgba(80, 38, 14, 0.45),
+    inset 0 0 0 6px rgba(255, 255, 255, 0.06),
+    inset 0 0 0 7px rgba(34, 27, 19, 0.15);
+  transform: rotate(-0.4deg);
 }
 
-.header__eyebrow {
+.header__board::before,
+.header__board::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+/* 古紙の汚れ・コーヒーステイン */
+.header__board::before {
+  inset: 0;
+  background:
+    radial-gradient(
+      circle 70px at 8% 88%,
+      rgba(151, 95, 38, 0.16),
+      transparent 70%
+    ),
+    radial-gradient(
+      circle 50px at 92% 12%,
+      rgba(151, 95, 38, 0.12),
+      transparent 70%
+    ),
+    radial-gradient(
+      circle 35px at 78% 90%,
+      rgba(151, 95, 38, 0.1),
+      transparent 70%
+    );
+  border-radius: inherit;
+  mix-blend-mode: multiply;
+}
+
+/* グレイン (極小ドット) */
+.header__board::after {
+  inset: 6px;
+  background-image: radial-gradient(
+    rgba(74, 53, 30, 0.18) 0.6px,
+    transparent 0.6px
+  );
+  background-size: 5px 5px;
+  opacity: 0.55;
+  border-radius: inherit;
+  mix-blend-mode: multiply;
+}
+
+/* 上部の和紙テープ */
+.header__tape {
+  position: absolute;
+  top: -8px;
+  width: 70px;
+  height: 22px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.35) 0,
+      rgba(255, 255, 255, 0.35) 4px,
+      rgba(255, 255, 255, 0.18) 4px,
+      rgba(255, 255, 255, 0.18) 8px
+    ),
+    rgba(232, 200, 156, 0.78);
+  border: 1px solid rgba(34, 27, 19, 0.22);
+  box-shadow: 0 4px 6px rgba(34, 27, 19, 0.18);
+  z-index: 4;
+}
+
+.header__tape--left {
+  left: 26px;
+  transform: rotate(-9deg);
+}
+
+.header__tape--right {
+  right: 26px;
+  transform: rotate(7deg);
+}
+
+/* 第〇回戦 のラベル */
+.header__round {
+  position: absolute;
+  top: 22px;
+  left: 26px;
+  font-family: var(--font-serif);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  color: var(--ink-soft);
+  z-index: 3;
+  transform: rotate(-2deg);
+}
+
+.header__round-pre,
+.header__round-post {
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+}
+
+.header__round-num {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1;
+  margin: 0 1px;
+}
+
+/* 朱印 (右上の丸い印) */
+.header__seal {
+  position: absolute;
+  top: 18px;
+  right: 24px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--vermilion);
+  color: var(--paper-glow);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  width: 100%;
-  color: var(--vermilion);
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  opacity: 0;
-  animation: fade-in 0.7s ease 0.05s forwards;
-}
-
-.header__eyebrow-line {
-  display: block;
-  flex: 1 1 auto;
-  max-width: 70px;
-  height: 1px;
-  background: currentColor;
-  transform-origin: left center;
-  animation: rule-extend 0.6s ease 0.2s both;
-}
-
-.header__eyebrow-line:last-child {
-  transform-origin: right center;
-}
-
-.header__eyebrow-text {
-  flex: 0 0 auto;
-  white-space: nowrap;
-}
-
-.header__title {
-  margin: 0;
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: clamp(2rem, 8.4vw, 2.7rem);
-  line-height: 1.04;
-  letter-spacing: 0.04em;
+  letter-spacing: -0.04em;
+  line-height: 0.92;
+  border: 2.5px solid var(--vermilion-deep);
+  box-shadow:
+    inset 0 0 0 1.5px rgba(255, 255, 255, 0.4),
+    inset 0 0 14px rgba(138, 31, 18, 0.45),
+    2px 3px 0 rgba(74, 22, 12, 0.6);
+  transform: rotate(8deg);
+  z-index: 3;
+  filter:
+    drop-shadow(0 1px 0 rgba(0, 0, 0, 0.1))
+    contrast(1.05);
+  animation: seal-stamp 0.5s cubic-bezier(0.6, 1.5, 0.5, 1) 0.85s both;
+}
+
+.header__seal::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.header__seal-char {
+  font-size: 1.05rem;
+  text-shadow:
+    0 0 1px rgba(138, 31, 18, 0.7);
+}
+
+/* タイトル */
+.header__title {
+  margin: 4px 0 0;
+  padding-top: 4px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2.1rem, 8.6vw, 3.1rem);
+  line-height: 1.05;
+  letter-spacing: 0.02em;
   color: var(--ink);
 }
 
@@ -344,55 +491,140 @@ textarea {
   display: inline-flex;
   flex-wrap: wrap;
   justify-content: center;
+  gap: 0;
 }
 
 .header__title-char {
   display: inline-block;
   opacity: 0;
-  transform: translateY(-14px) rotate(-6deg);
-  animation: drop-in 0.55s cubic-bezier(0.45, 1.4, 0.45, 1) forwards;
+  transform: translateY(-18px) rotate(-8deg);
+  animation: drop-in 0.6s cubic-bezier(0.45, 1.45, 0.45, 1) forwards;
+  text-shadow:
+    1px 1px 0 rgba(34, 27, 19, 0.12),
+    2px 2px 0 rgba(34, 27, 19, 0.06);
+}
+
+.header__title-char:nth-child(4),
+.header__title-char:nth-child(6) {
+  color: var(--vermilion-deep);
 }
 
 .header__title-char:nth-child(3n) {
-  color: var(--vermilion);
+  transform-origin: bottom center;
+  animation-name: drop-in-tilt;
 }
 
+/* キャッチコピー */
 .header__catch {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 700;
+  margin: 2px 0 0;
+  font-family: var(--font-serif);
+  font-size: 1.02rem;
+  font-weight: 500;
   color: var(--ink);
+  letter-spacing: 0.04em;
   opacity: 0;
-  animation: fade-in 0.6s ease 0.55s forwards;
+  animation: fade-in 0.6s ease 0.85s forwards;
 }
 
 .header__catch-em {
   position: relative;
   display: inline-block;
   color: var(--vermilion-deep);
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .header__catch-em::before {
   content: "";
   position: absolute;
-  left: -2px;
-  right: -2px;
-  bottom: 1px;
-  height: 7px;
-  background: rgba(227, 106, 74, 0.32);
-  border-radius: 4px;
+  left: -3px;
+  right: -3px;
+  bottom: 0;
+  height: 9px;
+  background: rgba(227, 106, 74, 0.28);
   z-index: -1;
+  transform: skewX(-8deg);
 }
 
-.header__sub {
-  margin: 0;
-  font-size: 0.82rem;
-  color: var(--ink-soft);
-  line-height: 1.7;
-  font-weight: 500;
+/* 下の罫 + 拳闘場 */
+.header__rule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 4px;
   opacity: 0;
-  animation: fade-in 0.6s ease 0.7s forwards;
+  animation: fade-in 0.5s ease 1s forwards;
+}
+
+.header__rule-line {
+  flex: 1 1 auto;
+  max-width: 90px;
+  height: 1px;
+  background: var(--ink-soft);
+  transform-origin: center;
+  animation: rule-extend 0.6s ease 1s both;
+}
+
+.header__rule-mark {
+  flex: 0 0 auto;
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.24em;
+  color: var(--ink-soft);
+  padding: 0 4px;
+}
+
+@keyframes drop-in-tilt {
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(2deg);
+  }
+}
+
+@keyframes seal-stamp {
+  0% {
+    opacity: 0;
+    transform: rotate(8deg) scale(2.2);
+    filter: blur(2px);
+  }
+  60% {
+    opacity: 1;
+    transform: rotate(8deg) scale(0.92);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(8deg) scale(1);
+  }
+}
+
+@media (max-width: 520px) {
+  .header__board {
+    padding: 32px 18px 18px;
+  }
+  .header__round {
+    top: 14px;
+    left: 14px;
+  }
+  .header__round-num {
+    font-size: 1.2rem;
+  }
+  .header__seal {
+    top: 14px;
+    right: 14px;
+    width: 50px;
+    height: 50px;
+  }
+  .header__seal-char {
+    font-size: 0.86rem;
+  }
+  .header__tape {
+    width: 56px;
+    height: 18px;
+    top: -6px;
+  }
 }
 
 /* --- Stage ------------------------------------------------------------- */
@@ -403,18 +635,152 @@ textarea {
   position: relative;
   background:
     radial-gradient(
-      ellipse 280px 300px at 50% 50%,
-      rgba(255, 220, 174, 0.7),
+      ellipse 320px 320px at 50% 48%,
+      rgba(255, 230, 184, 0.8),
       transparent 70%
+    ),
+    radial-gradient(
+      circle 120px at 14% 86%,
+      rgba(151, 95, 38, 0.16),
+      transparent 75%
+    ),
+    radial-gradient(
+      circle 90px at 92% 16%,
+      rgba(151, 95, 38, 0.12),
+      transparent 75%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(122, 88, 44, 0.045) 0,
+      rgba(122, 88, 44, 0.045) 1px,
+      transparent 1px,
+      transparent 9px
     ),
     linear-gradient(180deg, var(--paper-light), var(--paper-deep));
   border: 1.5px solid var(--ink);
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
+  box-shadow:
+    var(--shadow-card),
+    inset 0 0 0 6px rgba(255, 246, 220, 0.55),
+    inset 0 0 0 7px rgba(34, 27, 19, 0.12);
   padding: 24px 24px;
   height: clamp(380px, 58vh, 600px);
   overflow: hidden;
   isolation: isolate;
+}
+
+/* グレイン (細かい点描) */
+.stage::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  pointer-events: none;
+  background-image: radial-gradient(
+    rgba(74, 53, 30, 0.16) 0.6px,
+    transparent 0.6px
+  );
+  background-size: 5px 5px;
+  opacity: 0.45;
+  mix-blend-mode: multiply;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+/* 上隅の和紙テープ */
+.stage__tape {
+  position: absolute;
+  top: -10px;
+  width: 86px;
+  height: 24px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.4) 0,
+      rgba(255, 255, 255, 0.4) 4px,
+      rgba(255, 255, 255, 0.18) 4px,
+      rgba(255, 255, 255, 0.18) 8px
+    ),
+    rgba(232, 200, 156, 0.82);
+  border: 1px solid rgba(34, 27, 19, 0.22);
+  box-shadow: 0 4px 6px rgba(34, 27, 19, 0.18);
+  z-index: 7;
+  pointer-events: none;
+}
+
+.stage__tape--tl {
+  left: 18px;
+  transform: rotate(-12deg);
+}
+
+.stage__tape--tr {
+  right: 18px;
+  transform: rotate(10deg);
+}
+
+/* 右端の縦書きラベル */
+.stage__vertical {
+  position: absolute;
+  top: 36px;
+  right: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  line-height: 1.05;
+  z-index: 6;
+  user-select: none;
+  pointer-events: none;
+  text-shadow: 0 0 2px rgba(255, 245, 214, 0.6);
+}
+
+.stage__vertical > span {
+  display: block;
+  padding: 1px 0;
+}
+
+.stage__vertical::before,
+.stage__vertical::after {
+  content: "";
+  display: block;
+  width: 1px;
+  height: 12px;
+  background: currentColor;
+  opacity: 0.5;
+  margin: 4px auto;
+}
+
+/* 左下の小さな印 */
+.stage__corner-mark {
+  position: absolute;
+  bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  color: var(--vermilion-deep);
+  border: 1px solid currentColor;
+  padding: 5px 6px;
+  border-radius: 2px;
+  background: rgba(251, 242, 221, 0.6);
+  z-index: 6;
+  pointer-events: none;
+  transform: rotate(-2deg);
+}
+
+.stage__corner-mark--bl {
+  left: 14px;
+}
+
+.stage__corner-mark > span {
+  display: block;
+  padding: 1px 0;
 }
 
 .ring-bg {
