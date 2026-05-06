@@ -151,7 +151,9 @@ export function Sandbag({
             ? 0.78
             : kind === "upper"
               ? 0.6
-              : POWER_DENT_SIZE[power];
+              : kind === "cash"
+                ? 0.85
+                : POWER_DENT_SIZE[power];
     const yPos = kind === "upper" ? 78 : kind === "kick" ? 70 : 56;
     pushDent(50 + sideShift + xJitter, yPos + yJitter, baseSize);
   }, [hitKey, kind, power, side, pushDent]);
@@ -248,6 +250,7 @@ export function Sandbag({
     // slight scale + y shift convey depth without scaleX/Y stretching.
     const isUpperLike =
       kind === "upper" ||
+      kind === "cash" ||
       (side === 0 && (kind === "punch" || kind === "tap" || kind === "cat"));
     if (isUpperLike) {
       const intensityCap = Math.min(1.4, amp);

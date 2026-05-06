@@ -189,6 +189,12 @@ textarea {
   color: var(--ink);
 }
 
+.side-panel__head--mid {
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--ink-soft);
+}
+
 .side-section {
   display: flex;
   flex-direction: column;
@@ -229,12 +235,22 @@ textarea {
   align-items: center;
 }
 
+.side-section__list--row {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
 .side-section__list .quick-punch-button {
   width: 100%;
   flex: 0 0 auto;
 }
 
-.side-section__list--center .quick-punch-button--cat {
+.side-section__list--center .quick-punch-button--cat,
+.side-section__list--center .quick-punch-button--cash,
+.side-section__list--row .quick-punch-button--cat,
+.side-section__list--row .quick-punch-button--cash {
   width: auto;
 }
 
@@ -810,6 +826,60 @@ textarea {
   }
 }
 
+.flying-cash {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 110px;
+  height: auto;
+  margin-top: -55px;
+  margin-left: -55px;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0 8px 14px rgba(40, 26, 12, 0.45));
+  will-change: transform, opacity;
+  z-index: 4;
+}
+
+@media (min-width: 600px) {
+  .flying-cash {
+    width: 140px;
+    margin-top: -70px;
+    margin-left: -70px;
+  }
+}
+
+/* --- Towel overlay (タオルを投げる演出) -------------------------------- */
+
+.towel-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 7;
+}
+
+.towel-overlay__img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200px;
+  height: auto;
+  margin-top: -100px;
+  margin-left: -100px;
+  filter: drop-shadow(0 10px 18px rgba(40, 26, 12, 0.4));
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+@media (min-width: 600px) {
+  .towel-overlay__img {
+    width: 240px;
+    margin-top: -120px;
+    margin-left: -120px;
+  }
+}
+
 /* --- Input panel ------------------------------------------------------- */
 
 .text-punch {
@@ -1171,7 +1241,8 @@ textarea {
   outline-offset: 3px;
 }
 
-.quick-punch-button--cat {
+.quick-punch-button--cat,
+.quick-punch-button--cash {
   font-family: var(--font-mono);
   letter-spacing: 0.06em;
   border-style: dashed;
@@ -1183,6 +1254,21 @@ textarea {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+.quick-punch-button--cash {
+  border-color: #b48a3a;
+  background: linear-gradient(180deg, #fff8e0, #f0e2b4);
+  box-shadow: 3px 3px 0 #b48a3a;
+}
+
+.quick-punch-button--cash:hover {
+  background: #fff0c8;
+  border-color: #8a6620;
+}
+
+.quick-punch-button--cash:active {
+  box-shadow: 1px 1px 0 #b48a3a;
 }
 
 .quick-punch-button__icon {

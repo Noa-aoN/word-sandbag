@@ -1,8 +1,9 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { Sandbag } from "./Sandbag";
 import { FlyingWord } from "./FlyingWord";
 import { ImpactEffect } from "./ImpactEffect";
+import { TowelOverlay } from "./TowelOverlay";
 import type {
   BagState,
   FlyingWord as FlyingWordType,
@@ -26,6 +27,7 @@ type Props = {
   hitCount: number;
   message: string;
   bagState: BagState;
+  towelKey: number;
 };
 
 export function SandbagStage({
@@ -41,9 +43,20 @@ export function SandbagStage({
   hitCount,
   message,
   bagState,
+  towelKey,
 }: Props) {
   const stageRef = useRef<HTMLElement>(null);
   const [tapPoint, setTapPoint] = useState<{ x: number; y: number } | null>(null);
+  const [towelInstance, setTowelInstance] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (towelKey === 0) return;
+    setTowelInstance(towelKey);
+    const t = window.setTimeout(() => {
+      setTowelInstance(null);
+    }, 1100);
+    return () => window.clearTimeout(t);
+  }, [towelKey]);
 
   const handleTap = (side: number, clientPoint: { x: number; y: number } | null) => {
     if (clientPoint && stageRef.current) {
@@ -109,6 +122,9 @@ export function SandbagStage({
           {message}
         </p>
       )}
+      <AnimatePresence>
+        {towelInstance !== null && <TowelOverlay key={towelInstance} />}
+      </AnimatePresence>
     </section>
   );
 }

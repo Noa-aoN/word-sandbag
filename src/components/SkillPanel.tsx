@@ -1,4 +1,5 @@
 import catIconSrc from "../assets/sandbag/paw-right.png";
+import cashIconSrc from "../assets/sandbag/cash.png";
 
 type Props = {
   onCrunch: () => void;
@@ -6,6 +7,7 @@ type Props = {
   onUpper: () => void;
   onKick: () => void;
   onCatPunch: () => void;
+  onCashPunch: () => void;
   onThrowTowel: () => void;
   speed: number;
   onSpeedChange: (v: number) => void;
@@ -40,6 +42,7 @@ export function SkillPanel({
   onUpper,
   onKick,
   onCatPunch,
+  onCashPunch,
   onThrowTowel,
   speed,
   onSpeedChange,
@@ -51,6 +54,10 @@ export function SkillPanel({
 
   return (
     <aside className="side-panel side-panel--right" aria-label="右パネル">
+      <header className="side-panel__head">
+        <span className="side-panel__title">設定</span>
+      </header>
+
       <section className="side-section side-section--settings">
         <button
           type="button"
@@ -80,6 +87,10 @@ export function SkillPanel({
           </div>
         </div>
       </section>
+
+      <header className="side-panel__head side-panel__head--mid">
+        <span className="side-panel__title">操作</span>
+      </header>
 
       <section className="side-section">
         <div className="side-section__head">
@@ -125,7 +136,7 @@ export function SkillPanel({
         <div className="side-section__head">
           <span className="side-section__label">特殊パンチ</span>
         </div>
-        <div className="side-section__list side-section__list--center" role="group" aria-label="特殊パンチ">
+        <div className="side-section__list side-section__list--center side-section__list--row" role="group" aria-label="特殊パンチ">
           <button
             type="button"
             className="quick-punch-button quick-punch-button--cat"
@@ -135,6 +146,20 @@ export function SkillPanel({
             <img
               className="quick-punch-button__icon"
               src={catIconSrc}
+              alt=""
+              draggable={false}
+              aria-hidden="true"
+            />
+          </button>
+          <button
+            type="button"
+            className="quick-punch-button quick-punch-button--cash"
+            onClick={onCashPunch}
+            aria-label="札束パンチを放つ"
+          >
+            <img
+              className="quick-punch-button__icon"
+              src={cashIconSrc}
               alt=""
               draggable={false}
               aria-hidden="true"
