@@ -76,6 +76,8 @@ export function TextPunchPanel({
           言葉パンチする
         </button>
       </div>
+
+      <p className="text-punch__privacy">入力した言葉は保存されません。</p>
     </section>
   );
 }

@@ -20,7 +20,7 @@ const CATEGORIES: readonly Category[] = [
     presets: [
       { label: "なんでだよ", text: "なんでだよ" },
       { label: "ふざけんな", text: "ふざけんな" },
-      { label: "ぶっとばせ", text: "ぶっとばせ" },
+      { label: "ぶっとばす", text: "ぶっとばす" },
     ],
   },
   {
