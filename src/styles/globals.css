@@ -174,25 +174,59 @@ textarea {
   .app__inner {
     width: 1180px;
     max-width: none;
-    height: 940px;
+    height: 1000px;
     flex: 0 0 auto;
     transform-origin: center center;
     transform: scale(
       min(
         tan(atan2(100vw, 1180px)),
-        tan(atan2(100dvh, 940px))
+        tan(atan2(100dvh, 1000px))
       )
     );
   }
 
   .app__layout {
-    grid-template-columns: 220px minmax(0, 1fr) 240px;
-    grid-template-rows: auto auto;
+    grid-template-columns: 230px minmax(0, 1fr) 230px;
+    grid-template-rows: 480px auto;
     grid-template-areas:
       "left stage  right"
       "left text   right";
     gap: 18px;
     align-items: stretch;
+  }
+
+  /* 看板を中央カラム (上パネル) と同じ幅に揃える。
+     230 + 230 + 18*2 = 496 px が両側、残り 684 px が中央カラム。 */
+  .header {
+    align-self: center;
+    width: 684px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .header__sign {
+    max-width: none;
+  }
+
+  /* 左右パネル: グリッドセルに収まらない縦長コンテンツは内部スクロール。
+     min-height: 0 がないとデフォルトの auto min-height が中身に押されて
+     セルを伸ばしてしまう。 */
+  .side-panel {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+
+  .side-panel::-webkit-scrollbar {
+    width: 6px;
+  }
+  .side-panel::-webkit-scrollbar-thumb {
+    background: var(--ink-mute);
+    border-radius: 3px;
+  }
+  .side-panel::-webkit-scrollbar-track {
+    background: transparent;
   }
 }
 
