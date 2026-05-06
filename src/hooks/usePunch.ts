@@ -6,7 +6,7 @@ import type {
   PunchKind,
   PunchPower,
 } from "../types/punch";
-import { playClank, playErupt, playImpact, primeAudio } from "../lib/sound";
+import { playClank, playErupt, playImpact, playTowel, primeAudio } from "../lib/sound";
 import { bumpPower, classifyPower, isEmphasized } from "../lib/power";
 import { clampNumber, sanitizeInput } from "../lib/sanitize";
 
@@ -32,6 +32,7 @@ const TAP_MESSAGE_DURATION_MS = 900;
 const MESSAGE_AFTER_FIRST_IMPACT_MS = 380;
 
 const CAT_TEXT = "ニ";
+const CASH_TEXT = "万";
 
 
 const SPEED_MIN = 0.7;
@@ -84,6 +85,7 @@ export function usePunch() {
   const [speed, setSpeedState] = useState(SPEED_DEFAULT);
   const [soundOn, setSoundOn] = useState(true);
   const [bagState, setBagState] = useState<BagState>("active");
+  const [towelKey, setTowelKey] = useState(0);
 
   const messageTimerRef = useRef<number | null>(null);
   const messageDelayTimerRef = useRef<number | null>(null);
@@ -283,6 +285,12 @@ export function usePunch() {
     dispatchPunch(CAT_TEXT, "cat", side);
   }, [dispatchPunch]);
 
+  const cashPunch = useCallback(() => {
+    if (bagStateRef.current !== "active" || hitCountRef.current >= BREAK_AT) return;
+    const side: -1 | 1 = Math.random() < 0.5 ? -1 : 1;
+    dispatchPunch(CASH_TEXT, "cash", side);
+  }, [dispatchPunch]);
+
   const tap = useCallback(
     (side: number = 0) => {
       if (bagStateRef.current !== "active" || hitCountRef.current >= BREAK_AT) return;
@@ -383,6 +391,8 @@ export function usePunch() {
       window.clearTimeout(messageDelayTimerRef.current);
       messageDelayTimerRef.current = null;
     }
+    setTowelKey((k) => k + 1);
+    if (soundOnRef.current) playTowel();
     setMessage("タオル投入。今日はここまで。");
     messageTimerRef.current = window.setTimeout(() => {
       setMessage("");
@@ -410,6 +420,7 @@ export function usePunch() {
     punchWith,
     crunch,
     catPunch,
+    cashPunch,
     hook,
     upper,
     kick,
@@ -417,6 +428,7 @@ export function usePunch() {
     charImpact,
     removeWord,
     throwTowel,
+    towelKey,
     speedRange: { min: SPEED_MIN, max: SPEED_MAX, step: 0.1, default: SPEED_DEFAULT },
   };
 }

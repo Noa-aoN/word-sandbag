@@ -27,6 +27,7 @@ export function App() {
     punchWith,
     crunch,
     catPunch,
+    cashPunch,
     hook,
     upper,
     kick,
@@ -34,6 +35,7 @@ export function App() {
     charImpact,
     removeWord,
     throwTowel,
+    towelKey,
     speedRange,
   } = usePunch();
 
@@ -56,6 +58,7 @@ export function App() {
             hitCount={hitCount}
             message={message}
             bagState={bagState}
+            towelKey={towelKey}
           />
           <TextPunchPanel value={text} onChange={setText} onPunch={punch} />
           <SkillPanel
@@ -64,6 +67,7 @@ export function App() {
             onUpper={upper}
             onKick={kick}
             onCatPunch={catPunch}
+            onCashPunch={cashPunch}
             onThrowTowel={throwTowel}
             speed={speed}
             onSpeedChange={setSpeed}

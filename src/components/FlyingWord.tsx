@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import type { FlyingWord as FlyingWordType, PunchKind, PunchPower } from "../types/punch";
 import pawLeftSrc from "../assets/sandbag/paw-left.png";
 import pawRightSrc from "../assets/sandbag/paw-right.png";
+import cashSrc from "../assets/sandbag/cash.png";
 
 type Props = {
   word: FlyingWordType;
@@ -152,6 +153,26 @@ const KIND_FLIGHT: Record<PunchKind, KindFlight> = {
     centered: false,
     times: [0, 0.3, 0.7, 1],
   },
+  cash: {
+    duration: 0.7,
+    delay: 0.3,
+    startSide: 160,
+    startSideJitter: 24,
+    startY: 130,
+    startYJitter: 24,
+    midSide: 30,
+    midSideJitter: 6,
+    midYJitter: 10,
+    endSide: 70,
+    endSideJitter: 30,
+    endY: 28,
+    endYJitter: 18,
+    scaleHit: 1.35,
+    scaleEnd: 0.5,
+    endRotateRange: 80,
+    centered: false,
+    times: [0, 0.28, 0.7, 1],
+  },
 };
 
 function pseudoRandom(seed: number): number {
@@ -280,6 +301,33 @@ export function FlyingWord({ word, onComplete, onCharImpact }: Props) {
                 y: [startY, startY * 0.55, midY, endY],
                 scale: [0.45, 1, flight.scaleHit * 1.15, flight.scaleEnd],
                 rotate: [startRotate, startRotate * 0.4, 0, endRotate],
+              }}
+              transition={{
+                duration,
+                delay: charDelay,
+                ease: "easeOut",
+                times: flight.times,
+              }}
+              onAnimationComplete={isLast ? () => onComplete(word.id) : undefined}
+            />
+          );
+        }
+
+        if (word.kind === "cash") {
+          return (
+            <motion.img
+              key={i}
+              className="flying-cash"
+              src={cashSrc}
+              alt=""
+              draggable={false}
+              initial={{ opacity: 0, x: startX, y: startY, scale: 0.5, rotate: startRotate }}
+              animate={{
+                opacity: [0, 1, 1, 0],
+                x: [startX, startX * 0.5, midX, endX],
+                y: [startY, startY * 0.5, midY, endY],
+                scale: [0.5, 0.95, flight.scaleHit * 1.2, flight.scaleEnd],
+                rotate: [startRotate, startRotate * 0.5, 0, endRotate],
               }}
               transition={{
                 duration,

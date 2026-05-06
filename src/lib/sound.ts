@@ -415,6 +415,121 @@ function kickStrike() {
   node.stop(tailAt + 0.22);
 }
 
+function cashWhomp() {
+  const c = getCtx();
+  if (!c) return;
+  ensureRunning(c);
+  const master = getMaster(c);
+  const now = c.currentTime;
+
+  // Heavy thud (a stack of paper has weight)
+  thumpInto(c, master, now, {
+    bodyFreqStart: 90,
+    bodyFreqEnd: 30,
+    bodyDur: 0.42,
+    bodyVol: 0.4,
+    subFreqStart: 50,
+    subFreqEnd: 22,
+    subDur: 0.34,
+    subVol: 0.3,
+    slapBP: 1300,
+    slapBPQ: 1.7,
+    slapDur: 0.07,
+    slapVol: 0.18,
+    clickVol: 0.07,
+    clickDur: 0.016,
+  });
+
+  // Paper riffle: two short high-passed noise bursts
+  for (const startOffset of [0, 0.06]) {
+    const at = now + startOffset;
+    const { node, offset } = noiseSourceWithOffset(c);
+    const hp = c.createBiquadFilter();
+    hp.type = "highpass";
+    hp.frequency.setValueAtTime(2200, at);
+    const bp = c.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.setValueAtTime(4500, at);
+    bp.Q.setValueAtTime(0.9, at);
+    const gain = c.createGain();
+    gain.gain.setValueAtTime(0, at);
+    gain.gain.linearRampToValueAtTime(0.13, at + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0008, at + 0.13);
+    node.connect(hp);
+    hp.connect(bp);
+    bp.connect(gain);
+    gain.connect(master);
+    node.start(at, offset);
+    node.stop(at + 0.15);
+  }
+
+  // Cha-ching ding (two-note bell)
+  for (const [freq, atOffset, vol] of [
+    [1760, 0.02, 0.18] as const,
+    [2349, 0.12, 0.12] as const,
+  ]) {
+    const at = now + atOffset;
+    const osc = c.createOscillator();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(freq, at);
+    const gain = c.createGain();
+    gain.gain.setValueAtTime(0, at);
+    gain.gain.linearRampToValueAtTime(vol, at + 0.005);
+    gain.gain.exponentialRampToValueAtTime(0.0006, at + 0.5);
+    osc.connect(gain);
+    gain.connect(master);
+    osc.start(at);
+    osc.stop(at + 0.55);
+  }
+}
+
+export function playTowel() {
+  const c = getCtx();
+  if (!c) return;
+  ensureRunning(c);
+  const master = getMaster(c);
+  const now = c.currentTime;
+
+  // Cloth whoosh (filtered noise that sweeps)
+  {
+    const { node, offset } = noiseSourceWithOffset(c);
+    const bp = c.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.setValueAtTime(1800, now);
+    bp.frequency.exponentialRampToValueAtTime(500, now + 0.45);
+    bp.Q.setValueAtTime(0.9, now);
+    const gain = c.createGain();
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.14, now + 0.04);
+    gain.gain.linearRampToValueAtTime(0.1, now + 0.32);
+    gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.55);
+    node.connect(bp);
+    bp.connect(gain);
+    gain.connect(master);
+    node.start(now, offset);
+    node.stop(now + 0.6);
+  }
+
+  // Soft cloth thud at landing
+  const landAt = now + 0.42;
+  thumpInto(c, master, landAt, {
+    bodyFreqStart: 90,
+    bodyFreqEnd: 38,
+    bodyDur: 0.18,
+    bodyVol: 0.18,
+    subFreqStart: 42,
+    subFreqEnd: 26,
+    subDur: 0.16,
+    subVol: 0.12,
+    slapBP: 700,
+    slapBPQ: 1.0,
+    slapDur: 0.05,
+    slapVol: 0.08,
+    clickVol: 0.03,
+    clickDur: 0.01,
+  });
+}
+
 export function playErupt() {
   const c = getCtx();
   if (!c) return;
@@ -597,6 +712,9 @@ export function playImpact(kind: ImpactKind, power: PunchPower) {
       return;
     case "kick":
       kickStrike();
+      return;
+    case "cash":
+      cashWhomp();
       return;
     case "punch":
     default:
