@@ -506,7 +506,7 @@ textarea {
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: clamp(50px, 8%, 120px);
+  width: clamp(80px, 13%, 160px);
   height: auto;
   aspect-ratio: 1 / 1;
   z-index: 2;
@@ -906,31 +906,30 @@ textarea {
 /* --- Towel overlay (タオルを投げる演出) -------------------------------- */
 
 .towel-overlay {
-  position: fixed;
+  /* stage 内に絶対配置。サンドバッグの中心 (= bag-top-pct + bag-h/2) を
+     通るように top を計算する。stage の overflow: hidden で stage 端で
+     クリップされる。 */
+  position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 1000;
+  z-index: 7;
 }
 
 .towel-overlay__img {
   position: absolute;
-  top: 50%;
+  top: calc(var(--bag-top-pct) + var(--bag-h) / 2);
   left: 50%;
-  width: 200px;
+  width: clamp(120px, 22%, 280px);
   height: auto;
-  margin-top: -100px;
-  margin-left: -100px;
+  aspect-ratio: 1 / 1;
+  margin: 0;
+  /* CSS の translate プロパティで img の中心を (left: 50%, top: bag-center)
+     に揃える。framer の transform: translate3d(...) と composition される。 */
+  translate: -50% -50%;
+  transform-origin: center;
   filter: drop-shadow(0 10px 18px rgba(40, 26, 12, 0.4));
   user-select: none;
   -webkit-user-drag: none;
-}
-
-@media (min-width: 600px) {
-  .towel-overlay__img {
-    width: 240px;
-    margin-top: -120px;
-    margin-left: -120px;
-  }
 }
 
 /* --- Input panel ------------------------------------------------------- */
