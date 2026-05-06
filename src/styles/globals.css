@@ -441,9 +441,10 @@ textarea {
 .stage {
   /* サンドバッグの大きさと位置 (stage 高さに対する比率)
      - --bag-h: バッグ自体の高さ (clamp で min/max を担保)
+       max は十分大きく取り、stage が拡大したら追従する
      - --bag-top-pct: バッグ天端を stage 上端からどれだけ下げるか (%)
      チェーンの長さは bag-top-pct - 8px で連動する */
-  --bag-h: clamp(320px, 78%, 500px);
+  --bag-h: clamp(280px, 78%, 780px);
   --bag-top-pct: 10%;
   --bag-w: calc(var(--bag-h) * 320 / 971);
   position: relative;
@@ -498,25 +499,20 @@ textarea {
 }
 
 .chain-mount {
-  /* チェーン画像は 320x320 (1:1)。height: auto + aspect-ratio で自然比を
-     維持し、object-fit: cover による下部クロップを発生させない。 */
+  /* チェーン画像 320x320 (1:1) を natural 比のまま表示。
+     幅は stage 幅の比率にして、stage が拡大すれば鎖も同じ比率で拡大する。
+     8% は中央のバッグ幅に対して掛け金がほどよく被さる比率。 */
   position: absolute;
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 60px;
+  width: clamp(50px, 8%, 120px);
   height: auto;
   aspect-ratio: 1 / 1;
   z-index: 2;
   pointer-events: none;
   user-select: none;
   filter: drop-shadow(0 4px 6px rgba(40, 26, 12, 0.35));
-}
-
-@media (min-width: 600px) {
-  .chain-mount {
-    width: 76px;
-  }
 }
 
 .stage__seal {
