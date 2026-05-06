@@ -24,3 +24,11 @@ export function strengthDentMul(s: number): number {
   if (s >= 0.85) return 1.0;
   return 0.7;
 }
+
+// 4 段階の tier index (0=弱め / 1=ふつう / 2=強め / 3=全力)
+export function strengthTier(s: number): 0 | 1 | 2 | 3 {
+  if (s >= 1.65) return 3;
+  if (s >= 1.25) return 2;
+  if (s >= 0.85) return 1;
+  return 0;
+}

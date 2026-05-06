@@ -109,6 +109,7 @@ export function SandbagStage({
         kind={hitKind}
         side={hitSide}
         point={tapPoint}
+        strength={strength}
       />
       <AnimatePresence>
         {flyingWords.map((w) => (
