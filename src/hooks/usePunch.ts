@@ -39,6 +39,16 @@ const SPEED_MIN = 0.7;
 const SPEED_MAX = 2.4;
 const SPEED_DEFAULT = 1.6;
 
+const STRENGTH_MIN = 0.7;
+const STRENGTH_MAX = 1.8;
+const STRENGTH_DEFAULT = 1.0;
+
+function strengthBumps(s: number): number {
+  if (s >= 1.65) return 2;
+  if (s >= 1.25) return 1;
+  return 0;
+}
+
 const INTENSITY_MIN = 1.0;
 const INTENSITY_MAX = 3.0;
 const INTENSITY_INC = 0.15;
@@ -83,6 +93,7 @@ export function usePunch() {
   const [hitCount, setHitCount] = useState(0);
   const [message, setMessage] = useState("");
   const [speed, setSpeedState] = useState(SPEED_DEFAULT);
+  const [strength, setStrengthState] = useState(STRENGTH_DEFAULT);
   const [soundOn, setSoundOn] = useState(true);
   const [bagState, setBagState] = useState<BagState>("active");
   const [towelKey, setTowelKey] = useState(0);
@@ -97,6 +108,8 @@ export function usePunch() {
   bagStateRef.current = bagState;
   const hitCountRef = useRef(hitCount);
   hitCountRef.current = hitCount;
+  const strengthRef = useRef(strength);
+  strengthRef.current = strength;
 
   useEffect(
     () => () => {
@@ -185,6 +198,10 @@ export function usePunch() {
     setSpeedState(clampNumber(v, SPEED_MIN, SPEED_MAX, SPEED_DEFAULT));
   }, []);
 
+  const setStrength = useCallback((v: number) => {
+    setStrengthState(clampNumber(v, STRENGTH_MIN, STRENGTH_MAX, STRENGTH_DEFAULT));
+  }, []);
+
   const toggleSound = useCallback(() => {
     setSoundOn((on) => {
       const next = !on;
@@ -208,6 +225,8 @@ export function usePunch() {
       } else {
         const base = classifyPower(trimmed);
         power = isEmphasized(trimmed) ? bumpPower(base) : base;
+        const bumps = strengthBumps(strengthRef.current);
+        for (let i = 0; i < bumps; i++) power = bumpPower(power);
       }
 
       const word: FlyingWord = {
@@ -299,7 +318,9 @@ export function usePunch() {
       setHitSide(side);
       setHitCount((c) => c + 1);
       setHitKey((k) => k + 1);
-      setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 0.6));
+      setHitIntensity((prev) =>
+        Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 0.6 * strengthRef.current),
+      );
       scheduleIntensityDecay();
       showMessage(pickRandom(TAP_MESSAGES) ?? "", TAP_MESSAGE_DURATION_MS);
       if (soundOnRef.current) playImpact("tap", "light");
@@ -316,7 +337,9 @@ export function usePunch() {
     setHitSide(side);
     setHitCount((c) => c + 1);
     setHitKey((k) => k + 1);
-    setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 1.6));
+    setHitIntensity((prev) =>
+      Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 1.6 * strengthRef.current),
+    );
     scheduleIntensityDecay();
     if (soundOnRef.current) playImpact("hook", "heavy");
     vibrate("heavy");
@@ -329,7 +352,9 @@ export function usePunch() {
     setHitSide(0);
     setHitCount((c) => c + 1);
     setHitKey((k) => k + 1);
-    setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 1.4));
+    setHitIntensity((prev) =>
+      Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 1.4 * strengthRef.current),
+    );
     scheduleIntensityDecay();
     if (soundOnRef.current) playImpact("upper", "heavy");
     vibrate("heavy");
@@ -343,7 +368,9 @@ export function usePunch() {
     setHitSide(side);
     setHitCount((c) => c + 1);
     setHitKey((k) => k + 1);
-    setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 1.6));
+    setHitIntensity((prev) =>
+      Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 1.6 * strengthRef.current),
+    );
     scheduleIntensityDecay();
     if (soundOnRef.current) playImpact("kick", "heavy");
     vibrate("heavy");
@@ -364,7 +391,9 @@ export function usePunch() {
           intensityDecayRef.current = null;
         }
       } else {
-        setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC));
+        setHitIntensity((prev) =>
+          Math.min(INTENSITY_MAX, prev + INTENSITY_INC * strengthRef.current),
+        );
         scheduleIntensityDecay();
       }
 
@@ -430,5 +459,8 @@ export function usePunch() {
     throwTowel,
     towelKey,
     speedRange: { min: SPEED_MIN, max: SPEED_MAX, step: 0.1, default: SPEED_DEFAULT },
+    strength,
+    setStrength,
+    strengthRange: { min: STRENGTH_MIN, max: STRENGTH_MAX, step: 0.1, default: STRENGTH_DEFAULT },
   };
 }

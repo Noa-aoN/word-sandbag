@@ -844,10 +844,10 @@ textarea {
 /* --- Towel overlay (タオルを投げる演出) -------------------------------- */
 
 .towel-overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 7;
+  z-index: 1000;
 }
 
 .towel-overlay__img {

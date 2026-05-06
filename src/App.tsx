@@ -37,6 +37,9 @@ export function App() {
     throwTowel,
     towelKey,
     speedRange,
+    strength,
+    setStrength,
+    strengthRange,
   } = usePunch();
 
   return (
@@ -72,6 +75,9 @@ export function App() {
             speed={speed}
             onSpeedChange={setSpeed}
             speedRange={speedRange}
+            strength={strength}
+            onStrengthChange={setStrength}
+            strengthRange={strengthRange}
             soundOn={soundOn}
             onToggleSound={toggleSound}
           />

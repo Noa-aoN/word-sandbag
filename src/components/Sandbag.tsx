@@ -152,7 +152,7 @@ export function Sandbag({
             : kind === "upper"
               ? 0.6
               : kind === "cash"
-                ? 0.85
+                ? 0.55
                 : POWER_DENT_SIZE[power];
     const yPos = kind === "upper" ? 78 : kind === "kick" ? 70 : 56;
     pushDent(50 + sideShift + xJitter, yPos + yJitter, baseSize);
