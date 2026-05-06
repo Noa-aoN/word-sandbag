@@ -10,7 +10,7 @@ const CATEGORIES: readonly Category[] = [
     name: "泣き言（コード）",
     presets: [
       { label: "バグだ", text: "バグだ" },
-      { label: "型エラーつらい", text: "型エラーつらい" },
+      { label: "なにもわからん", text: "なにもわからん" },
       { label: "ビルド通らん", text: "ビルド通らん" },
       { label: "もう無理", text: "もう無理" },
     ],
@@ -18,29 +18,29 @@ const CATEGORIES: readonly Category[] = [
   {
     name: "怒り",
     presets: [
-      { label: "ぶっとばせ", text: "ぶっとばせ" },
       { label: "なんでだよ", text: "なんでだよ" },
       { label: "ふざけんな", text: "ふざけんな" },
+      { label: "ぶっとばせ", text: "ぶっとばせ" },
     ],
   },
   {
-    name: "自己受容",
+    name: "受容",
     presets: [
       { label: "まあいっか", text: "まあいっか" },
-      { label: "ぼちぼちで", text: "ぼちぼちで" },
+      { label: "ありのまま", text: "ありのまま" },
       { label: "それも自分", text: "それも自分" },
     ],
   },
   {
     name: "感謝",
     presets: [
-      { label: "ありがとう", text: "ありがとう" },
-      { label: "助かった", text: "助かった" },
       { label: "おつかれさま", text: "おつかれさま" },
+      { label: "助かった", text: "助かった" },
+      { label: "ありがとう", text: "ありがとう" },
     ],
   },
   {
-    name: "ネタ",
+    name: "長い言葉",
     presets: [
       {
         label: "スリランカの首都",
