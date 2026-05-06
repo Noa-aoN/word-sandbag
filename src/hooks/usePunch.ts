@@ -327,6 +327,20 @@ export function usePunch() {
     vibrate("heavy");
   }, [scheduleIntensityDecay]);
 
+  const kick = useCallback(() => {
+    if (bagStateRef.current !== "active" || hitCountRef.current >= BREAK_AT) return;
+    const side = Math.random() < 0.5 ? -1 : 1;
+    setHitPower("heavy");
+    setHitKind("kick");
+    setHitSide(side);
+    setHitCount((c) => c + 1);
+    setHitKey((k) => k + 1);
+    setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 1.6));
+    scheduleIntensityDecay();
+    if (soundOnRef.current) playImpact("kick", "heavy");
+    vibrate("heavy");
+  }, [scheduleIntensityDecay]);
+
   const charImpact = useCallback(
     (power: PunchPower, kind: PunchKind, side: number) => {
       setHitPower(power);
@@ -378,6 +392,7 @@ export function usePunch() {
     catPunch,
     hook,
     upper,
+    kick,
     tap,
     charImpact,
     removeWord,
