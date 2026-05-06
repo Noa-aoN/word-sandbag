@@ -516,7 +516,12 @@ textarea {
 /* --- Stage ------------------------------------------------------------- */
 
 .stage {
-  --bag-h: clamp(340px, 86%, 580px);
+  /* サンドバッグの大きさと位置 (stage 高さに対する比率)
+     - --bag-h: バッグ自体の高さ (clamp で min/max を担保)
+     - --bag-top-pct: バッグ天端を stage 上端からどれだけ下げるか (%)
+     チェーンの長さは bag-top-pct - 8px で連動する */
+  --bag-h: clamp(320px, 78%, 500px);
+  --bag-top-pct: 10%;
   --bag-w: calc(var(--bag-h) * 320 / 971);
   position: relative;
   background:
@@ -575,8 +580,8 @@ textarea {
   left: 50%;
   transform: translateX(-50%);
   width: 64px;
-  height: calc(50% - var(--bag-h) / 2 - 8px);
-  min-height: 28px;
+  height: calc(var(--bag-top-pct) - 8px);
+  min-height: 24px;
   object-fit: cover;
   object-position: top center;
   z-index: 2;
@@ -647,11 +652,11 @@ textarea {
 
 .stage__sandbag-anchor {
   position: absolute;
-  top: 50%;
+  top: var(--bag-top-pct);
   left: 50%;
   width: var(--bag-w);
   height: var(--bag-h);
-  margin-top: calc(var(--bag-h) / -2);
+  margin-top: 0;
   margin-left: calc(var(--bag-w) / -2);
   z-index: 3;
   border-radius: 18px;
