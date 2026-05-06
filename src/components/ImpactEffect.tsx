@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import type { ImpactKind, PunchPower } from "../types/punch";
 import burstSrc from "../assets/sandbag/burst.png";
 import heartSrc from "../assets/sandbag/heart.png";
+import { strengthTier } from "../lib/strength";
 
 type Props = {
   hitKey: number;
@@ -10,19 +11,23 @@ type Props = {
   kind: ImpactKind;
   side: number;
   point: { x: number; y: number } | null;
+  strength: number;
 };
 
-const PUNCH_LABEL: Record<PunchPower, string> = {
-  light: "ポンッ",
-  normal: "バシッ",
-  heavy: "ドゴッ",
-};
+// power × strength tier (3 × 4) で擬音を細かく出し分ける。
+//   行: 0=light, 1=normal, 2=heavy (=strength で底上げされた後の power)
+//   列: 0=弱め, 1=ふつう, 2=強め, 3=全力 (strength tier)
+const PUNCH_LABEL_TABLE: ReadonlyArray<readonly [string, string, string, string]> = [
+  ["ポン", "ポンッ", "ポーン", "ポンッ!!"],
+  ["バシ", "バシッ", "バシーン", "バシン!!"],
+  ["ドゴ", "ドゴッ", "ドゴーン", "ドガーン!!"],
+] as const;
 
-const TAP_LABEL: Record<PunchPower, string> = {
-  light: "ポン",
-  normal: "ポンッ",
-  heavy: "バシッ",
-};
+const TAP_LABEL_TABLE: ReadonlyArray<readonly [string, string, string, string]> = [
+  ["ポン", "ポンッ", "ポーン", "ポンッ!"],
+  ["ポンッ", "バシ", "バシッ", "バシン!"],
+  ["バシッ", "バシン", "ドゴッ", "ドガッ!!"],
+] as const;
 
 const sizeByPower: Record<PunchPower, number> = {
   light: 0.85,
@@ -30,18 +35,25 @@ const sizeByPower: Record<PunchPower, number> = {
   heavy: 1.25,
 };
 
-function labelFor(kind: ImpactKind, power: PunchPower): string {
+function powerIdx(power: PunchPower): 0 | 1 | 2 {
+  if (power === "light") return 0;
+  if (power === "normal") return 1;
+  return 2;
+}
+
+function labelFor(kind: ImpactKind, power: PunchPower, strength: number): string {
   if (kind === "cat") return "にゃっ";
   if (kind === "crunch") return "ぎゅっ";
-  if (kind === "tap") return TAP_LABEL[power];
   if (kind === "hook") return "ガッ";
   if (kind === "upper") return "ドカッ";
   if (kind === "kick") return "ドガッ";
   if (kind === "cash") return "ドサッ";
-  return PUNCH_LABEL[power];
+  const tier = strengthTier(strength);
+  const table = kind === "tap" ? TAP_LABEL_TABLE : PUNCH_LABEL_TABLE;
+  return table[powerIdx(power)][tier];
 }
 
-export function ImpactEffect({ hitKey, power, kind, side, point }: Props) {
+export function ImpactEffect({ hitKey, power, kind, side, point, strength }: Props) {
   const reduce = useReducedMotion();
 
   const scale = sizeByPower[power];
@@ -151,7 +163,7 @@ export function ImpactEffect({ hitKey, power, kind, side, point }: Props) {
             />
           </>
         )}
-        <span className="impact__text">{labelFor(kind, power)}</span>
+        <span className="impact__text">{labelFor(kind, power, strength)}</span>
       </motion.div>
     </div>
   );
