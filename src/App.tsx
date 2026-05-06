@@ -27,6 +27,7 @@ export function App() {
     catPunch,
     hook,
     upper,
+    kick,
     tap,
     charImpact,
     removeWord,
@@ -58,6 +59,7 @@ export function App() {
           onCrunch={crunch}
           onHook={hook}
           onUpper={upper}
+          onKick={kick}
           onQuickPunch={punchWith}
           onCatPunch={catPunch}
           speed={speed}

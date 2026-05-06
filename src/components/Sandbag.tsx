@@ -132,10 +132,14 @@ export function Sandbag({
     // Guards against StrictMode re-invocation and any duplicate render path.
     if (lastDentHitKeyRef.current === hitKey) return;
     lastDentHitKeyRef.current = hitKey;
-    const sideMag = kind === "hook" ? 28 : 18;
-    // Hook: dent appears on the side that received the force (opposite the swing direction)
+    const sideMag = kind === "hook" ? 28 : kind === "kick" ? 24 : 18;
+    // Hook / kick: dent appears on the side that received the force (opposite the swing direction)
     const sideShift =
-      side === 0 ? 0 : kind === "hook" ? -side * sideMag : side * sideMag;
+      side === 0
+        ? 0
+        : kind === "hook" || kind === "kick"
+          ? -side * sideMag
+          : side * sideMag;
     const xJitter = (Math.random() - 0.5) * (kind === "hook" ? 4 : 6);
     const yJitter = (Math.random() - 0.5) * 14;
     const baseSize =
@@ -143,10 +147,12 @@ export function Sandbag({
         ? 0.4
         : kind === "hook"
           ? 0.82
-          : kind === "upper"
-            ? 0.6
-            : POWER_DENT_SIZE[power];
-    const yPos = kind === "upper" ? 78 : 56;
+          : kind === "kick"
+            ? 0.78
+            : kind === "upper"
+              ? 0.6
+              : POWER_DENT_SIZE[power];
+    const yPos = kind === "upper" ? 78 : kind === "kick" ? 70 : 56;
     pushDent(50 + sideShift + xJitter, yPos + yJitter, baseSize);
   }, [hitKey, kind, power, side, pushDent]);
 
@@ -256,12 +262,13 @@ export function Sandbag({
       };
     }
 
-    if (kind === "hook") {
+    if (kind === "hook" || kind === "kick") {
       const swayBase = punchSwayByPower.heavy;
       const flip = side === -1 ? -1 : 1;
+      const swingMul = kind === "kick" ? 1.4 : 1.25;
       return {
         hitAnimate: {
-          rotate: swayBase.rotate.map((v) => v * flip * amp * 1.25),
+          rotate: swayBase.rotate.map((v) => v * flip * amp * swingMul),
           rotateX: [0, -3, 1, 0],
           scale: 1,
         },

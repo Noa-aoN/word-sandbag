@@ -30,6 +30,7 @@ function labelFor(kind: ImpactKind, power: PunchPower): string {
   if (kind === "tap") return "ポン";
   if (kind === "hook") return "ガッ";
   if (kind === "upper") return "ドカッ";
+  if (kind === "kick") return "ドガッ";
   return PUNCH_LABEL[power];
 }
 
@@ -40,7 +41,10 @@ export function ImpactEffect({ hitKey, power, kind, side, point }: Props) {
   const scale = sizeByPower[power];
   const showBurst = !reduce && kind !== "crunch";
   const useTapPos = kind === "tap" && point !== null;
-  const offsetPx = !useTapPos && (kind === "punch" || kind === "cat" || kind === "hook") ? side * 30 : 0;
+  const offsetPx =
+    !useTapPos && (kind === "punch" || kind === "cat" || kind === "hook" || kind === "kick")
+      ? side * 30
+      : 0;
   const wrapStyle: CSSProperties = useTapPos && point
     ? {
         top: `${point.y}px`,

@@ -371,6 +371,50 @@ function upperLift() {
   });
 }
 
+function kickStrike() {
+  const c = getCtx();
+  if (!c) return;
+  ensureRunning(c);
+  const master = getMaster(c);
+  const now = c.currentTime;
+
+  // Heavy low body + sharp leather snap up top
+  thumpInto(c, master, now, {
+    bodyFreqStart: 100,
+    bodyFreqEnd: 36,
+    bodyDur: 0.4,
+    bodyVol: 0.42,
+    subFreqStart: 56,
+    subFreqEnd: 24,
+    subDur: 0.32,
+    subVol: 0.32,
+    slapBP: 1600,
+    slapBPQ: 2.0,
+    slapDur: 0.07,
+    slapVol: 0.2,
+    clickVol: 0.08,
+    clickDur: 0.018,
+  });
+
+  // Whip-crack tail to read as a kick rather than a punch
+  const tailAt = now + 0.04;
+  const { node, offset } = noiseSourceWithOffset(c);
+  const bp = c.createBiquadFilter();
+  bp.type = "bandpass";
+  bp.frequency.setValueAtTime(2600, tailAt);
+  bp.frequency.exponentialRampToValueAtTime(700, tailAt + 0.18);
+  bp.Q.setValueAtTime(2.0, tailAt);
+  const gain = c.createGain();
+  gain.gain.setValueAtTime(0, tailAt);
+  gain.gain.linearRampToValueAtTime(0.1, tailAt + 0.012);
+  gain.gain.exponentialRampToValueAtTime(0.0008, tailAt + 0.2);
+  node.connect(bp);
+  bp.connect(gain);
+  gain.connect(master);
+  node.start(tailAt, offset);
+  node.stop(tailAt + 0.22);
+}
+
 export function playErupt() {
   const c = getCtx();
   if (!c) return;
@@ -550,6 +594,9 @@ export function playImpact(kind: ImpactKind, power: PunchPower) {
       return;
     case "upper":
       upperLift();
+      return;
+    case "kick":
+      kickStrike();
       return;
     case "punch":
     default:

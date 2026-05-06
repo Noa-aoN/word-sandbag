@@ -132,6 +132,26 @@ const KIND_FLIGHT: Record<PunchKind, KindFlight> = {
     centered: true,
     times: [0, 0.3, 0.65, 1],
   },
+  kick: {
+    duration: 0.92,
+    delay: 0.44,
+    startSide: 180,
+    startSideJitter: 28,
+    startY: 60,
+    startYJitter: 26,
+    midSide: 36,
+    midSideJitter: 6,
+    midYJitter: 12,
+    endSide: 96,
+    endSideJitter: 40,
+    endY: 50,
+    endYJitter: 24,
+    scaleHit: 1.42,
+    scaleEnd: 0.4,
+    endRotateRange: 130,
+    centered: false,
+    times: [0, 0.3, 0.7, 1],
+  },
 };
 
 function pseudoRandom(seed: number): number {

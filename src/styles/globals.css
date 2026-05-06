@@ -1041,6 +1041,69 @@ textarea {
   color: var(--vermilion-deep);
 }
 
+.variant-button--kick {
+  background: linear-gradient(180deg, #e8a98a, #b3613a);
+  color: #2c1808;
+}
+
+/* --- Combat grid (left: 特殊 / right: 技) ----------------------------- */
+
+.combat-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--ink-soft);
+}
+
+.combat-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.combat-column__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.combat-column__label {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.combat-column__tag {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.32em;
+  color: var(--vermilion);
+  border: 1px solid currentColor;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.combat-column__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.combat-column--special .combat-column__list {
+  align-items: center;
+}
+
+.combat-column__list .variant-button {
+  flex: 0 0 auto;
+  min-width: 0;
+  width: 100%;
+}
+
 /* --- Quick punches ----------------------------------------------------- */
 
 .quick-punches {
