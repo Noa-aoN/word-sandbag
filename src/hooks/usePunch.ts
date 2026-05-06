@@ -34,9 +34,9 @@ const MESSAGE_AFTER_FIRST_IMPACT_MS = 380;
 const CAT_TEXT = "ニ";
 
 
-const SPEED_MIN = 0.5;
-const SPEED_MAX = 1.7;
-const SPEED_DEFAULT = 1.1;
+const SPEED_MIN = 0.7;
+const SPEED_MAX = 2.4;
+const SPEED_DEFAULT = 1.6;
 
 const INTENSITY_MIN = 1.0;
 const INTENSITY_MAX = 3.0;
@@ -370,6 +370,26 @@ export function usePunch() {
     setFlyingWords((prev) => prev.filter((w) => w.id !== id));
   }, []);
 
+  const throwTowel = useCallback(() => {
+    // Cancel every in-flight word and pending message — FlyingWord's effect
+    // cleanup clears its char-impact timers when it unmounts.
+    setFlyingWords([]);
+    setText("");
+    if (messageTimerRef.current !== null) {
+      window.clearTimeout(messageTimerRef.current);
+      messageTimerRef.current = null;
+    }
+    if (messageDelayTimerRef.current !== null) {
+      window.clearTimeout(messageDelayTimerRef.current);
+      messageDelayTimerRef.current = null;
+    }
+    setMessage("タオル投入。今日はここまで。");
+    messageTimerRef.current = window.setTimeout(() => {
+      setMessage("");
+      messageTimerRef.current = null;
+    }, 1600);
+  }, []);
+
   return {
     text,
     setText,
@@ -396,6 +416,7 @@ export function usePunch() {
     tap,
     charImpact,
     removeWord,
+    throwTowel,
     speedRange: { min: SPEED_MIN, max: SPEED_MAX, step: 0.1, default: SPEED_DEFAULT },
   };
 }

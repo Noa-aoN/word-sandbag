@@ -1,8 +1,12 @@
+import catIconSrc from "../assets/sandbag/paw-right.png";
+
 type Props = {
   onCrunch: () => void;
   onHook: () => void;
   onUpper: () => void;
   onKick: () => void;
+  onCatPunch: () => void;
+  onThrowTowel: () => void;
   speed: number;
   onSpeedChange: (v: number) => void;
   speedRange: { min: number; max: number; step: number };
@@ -11,8 +15,8 @@ type Props = {
 };
 
 function speedTier(v: number): string {
-  if (v < 0.85) return "ゆっくり";
-  if (v < 1.15) return "ふつう";
+  if (v < 1.1) return "ゆっくり";
+  if (v < 1.8) return "ふつう";
   return "はやい";
 }
 
@@ -21,6 +25,8 @@ export function SkillPanel({
   onHook,
   onUpper,
   onKick,
+  onCatPunch,
+  onThrowTowel,
   speed,
   onSpeedChange,
   speedRange,
@@ -108,6 +114,42 @@ export function SkillPanel({
             クランチする
           </button>
         </div>
+      </section>
+
+      <section className="side-section">
+        <div className="side-section__head">
+          <span className="side-section__label">特殊パンチ</span>
+          <span className="side-section__tag" aria-hidden="true">
+            SPECIAL
+          </span>
+        </div>
+        <div className="side-section__list side-section__list--center" role="group" aria-label="特殊パンチ">
+          <button
+            type="button"
+            className="quick-punch-button quick-punch-button--cat"
+            onClick={onCatPunch}
+            aria-label="猫パンチを放つ"
+          >
+            <img
+              className="quick-punch-button__icon"
+              src={catIconSrc}
+              alt=""
+              draggable={false}
+              aria-hidden="true"
+            />
+          </button>
+        </div>
+      </section>
+
+      <section className="side-section">
+        <button
+          type="button"
+          className="towel-button"
+          onClick={onThrowTowel}
+          aria-label="タオルを投げて言葉パンチを途中で終わらせる"
+        >
+          タオルを投げる
+        </button>
       </section>
     </aside>
   );
