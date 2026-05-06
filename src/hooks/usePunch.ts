@@ -328,16 +328,49 @@ export function usePunch() {
   const tap = useCallback(
     (side: number = 0) => {
       if (bagStateRef.current !== "active" || hitCountRef.current >= BREAK_AT) return;
-      setHitPower("light");
-      setHitKind("tap");
-      setHitSide(side);
+      const s = strengthRef.current;
+
+      // 弱め: 通常のクリックパンチ (既存の tap)
+      if (s < 0.85) {
+        setHitPower("light");
+        setHitKind("tap");
+        setHitSide(side);
+        setHitCount((c) => c + 1);
+        setHitKey((k) => k + 1);
+        setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 0.6));
+        scheduleIntensityDecay();
+        showMessage(pickRandom(TAP_MESSAGES) ?? "", TAP_MESSAGE_DURATION_MS);
+        if (soundOnRef.current) playImpact("tap", "light");
+        vibrate("light");
+        return;
+      }
+
+      // ふつう以上: 専用ボタンと同じ重い演出にクリック位置の side を反映
+      let kind: PunchKind;
+      let resolvedSide: number;
+      let intensityMul: number;
+      if (s >= 1.65) {
+        kind = "kick";
+        resolvedSide = side === 0 ? (Math.random() < 0.5 ? -1 : 1) : side;
+        intensityMul = 1.6;
+      } else if (s >= 1.25) {
+        kind = "hook";
+        resolvedSide = side === 0 ? (Math.random() < 0.5 ? -1 : 1) : side;
+        intensityMul = 1.6;
+      } else {
+        kind = "upper";
+        resolvedSide = 0;
+        intensityMul = 1.4;
+      }
+      setHitPower("heavy");
+      setHitKind(kind);
+      setHitSide(resolvedSide);
       setHitCount((c) => c + 1);
       setHitKey((k) => k + 1);
-      setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC * 0.6));
+      setHitIntensity((prev) => Math.min(INTENSITY_MAX, prev + INTENSITY_INC * intensityMul));
       scheduleIntensityDecay();
-      showMessage(pickRandom(TAP_MESSAGES) ?? "", TAP_MESSAGE_DURATION_MS);
-      if (soundOnRef.current) playImpact("tap", "light");
-      vibrate("light");
+      if (soundOnRef.current) playImpact(kind, "heavy");
+      vibrate("heavy");
     },
     [showMessage, scheduleIntensityDecay],
   );
