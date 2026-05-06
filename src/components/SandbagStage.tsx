@@ -28,6 +28,7 @@ type Props = {
   message: string;
   bagState: BagState;
   towelKey: number;
+  strength: number;
 };
 
 export function SandbagStage({
@@ -44,6 +45,7 @@ export function SandbagStage({
   message,
   bagState,
   towelKey,
+  strength,
 }: Props) {
   const stageRef = useRef<HTMLElement>(null);
   const [tapPoint, setTapPoint] = useState<{ x: number; y: number } | null>(null);
@@ -98,6 +100,7 @@ export function SandbagStage({
         side={hitSide}
         intensity={hitIntensity}
         bagState={bagState}
+        strength={strength}
         onTap={handleTap}
       />
       <ImpactEffect

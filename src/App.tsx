@@ -62,6 +62,7 @@ export function App() {
             message={message}
             bagState={bagState}
             towelKey={towelKey}
+            strength={strength}
           />
           <TextPunchPanel value={text} onChange={setText} onPunch={punch} />
           <SkillPanel

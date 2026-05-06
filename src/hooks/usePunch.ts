@@ -9,6 +9,7 @@ import type {
 import { playClank, playErupt, playImpact, playTowel, primeAudio } from "../lib/sound";
 import { bumpPower, classifyPower, isEmphasized } from "../lib/power";
 import { clampNumber, sanitizeInput } from "../lib/sanitize";
+import { strengthBumps, strengthIntensityMul } from "../lib/strength";
 
 const COMPLETE_MESSAGES = [
   "その言葉は、ここで消えました。",
@@ -43,23 +44,6 @@ const STRENGTH_MIN = 0.7;
 const STRENGTH_MAX = 1.8;
 const STRENGTH_DEFAULT = 1.0;
 
-// 強度 (strength) は「凹みの大きさ・効果音・揺れ」の重さを底上げするだけで、
-// kind や着弾位置は弄らない (それらは入力 / クリック位置で決まる)。
-//   弱め (~0.7)  → 据え置き、揺れ控えめ
-//   ふつう (~1.0) → 標準
-//   強め (~1.4)  → power +1段、揺れ強め
-//   全力 (~1.8)  → power +2段、揺れ最大
-function strengthBumps(s: number): number {
-  if (s >= 1.65) return 2;
-  if (s >= 1.25) return 1;
-  return 0;
-}
-function strengthIntensityMul(s: number): number {
-  if (s >= 1.65) return 1.6;
-  if (s >= 1.25) return 1.3;
-  if (s >= 0.85) return 1.0;
-  return 0.7;
-}
 
 const INTENSITY_MIN = 1.0;
 const INTENSITY_MAX = 3.0;
