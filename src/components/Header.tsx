@@ -3,14 +3,14 @@ const TITLE = "言葉サンドバッグ";
 export function Header() {
   return (
     <header className="header">
-      <div className="header__board">
-        <span className="header__tape header__tape--left" aria-hidden="true" />
-        <span className="header__tape header__tape--right" aria-hidden="true" />
+      <div className="header__sign">
+        <span className="header__rivet header__rivet--tl" aria-hidden="true" />
+        <span className="header__rivet header__rivet--tr" aria-hidden="true" />
+        <span className="header__rivet header__rivet--bl" aria-hidden="true" />
+        <span className="header__rivet header__rivet--br" aria-hidden="true" />
 
-        <div className="header__seal" aria-hidden="true">
-          <span className="header__seal-char">言</span>
-          <span className="header__seal-char">葉</span>
-        </div>
+        <span className="header__bar header__bar--top" aria-hidden="true" />
+        <span className="header__bar header__bar--bottom" aria-hidden="true" />
 
         <h1 className="header__title">
           <span className="visually-hidden">{TITLE}</span>
@@ -30,12 +30,6 @@ export function Header() {
         <p className="header__catch">
           その言葉、<span className="header__catch-em">ここでぶつけて消そう。</span>
         </p>
-
-        <div className="header__rule" aria-hidden="true">
-          <span className="header__rule-line" />
-          <span className="header__rule-mark">拳闘場</span>
-          <span className="header__rule-line" />
-        </div>
       </div>
     </header>
   );

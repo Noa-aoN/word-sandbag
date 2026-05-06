@@ -155,6 +155,36 @@ textarea {
 }
 
 @media (min-width: 980px) {
+  /* デスクトップ: アプリ全体を viewport にフィットさせる
+     比率を変えずに transform: scale で縮小拡大。
+     `tan(atan2(100vw, designW))` で 100vw / designW を unitless にする CSS
+     trick (CSS Values 4)。 */
+  .app {
+    position: fixed;
+    inset: 0;
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .app__inner {
+    width: 1180px;
+    max-width: none;
+    height: 940px;
+    flex: 0 0 auto;
+    transform-origin: center center;
+    transform: scale(
+      min(
+        tan(atan2(100vw, 1180px)),
+        tan(atan2(100dvh, 940px))
+      )
+    );
+  }
+
   .app__layout {
     grid-template-columns: 220px minmax(0, 1fr) 240px;
     grid-template-rows: auto auto;
@@ -286,165 +316,106 @@ textarea {
   outline-offset: 3px;
 }
 
-/* --- Header (和紙ポスター × 朱印) -------------------------------------- */
+/* --- Header (ジムの看板) ----------------------------------------------- */
 
 .header {
   text-align: center;
-  padding: 18px 4px 8px;
+  padding: 14px 4px 6px;
 }
 
-.header__board {
+.header__sign {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
-  padding: 30px 28px 24px;
+  gap: 10px;
+  padding: 22px 28px 18px;
   margin: 0 auto;
   max-width: 760px;
   background:
-    radial-gradient(
-      ellipse 480px 240px at 50% 20%,
-      rgba(255, 246, 214, 0.95),
-      transparent 75%
-    ),
-    repeating-linear-gradient(
-      0deg,
-      rgba(122, 88, 44, 0.05) 0,
-      rgba(122, 88, 44, 0.05) 1px,
-      transparent 1px,
-      transparent 9px
-    ),
-    linear-gradient(180deg, #faf0d6 0%, #f1dfb1 100%);
-  border: 1.5px solid var(--ink);
-  border-radius: 4px;
-  box-shadow:
-    2px 3px 0 var(--ink),
-    0 22px 28px -16px rgba(80, 38, 14, 0.45),
-    inset 0 0 0 6px rgba(255, 255, 255, 0.06),
-    inset 0 0 0 7px rgba(34, 27, 19, 0.15);
-  transform: rotate(-0.4deg);
-}
-
-.header__board::before,
-.header__board::after {
-  content: "";
-  position: absolute;
-  pointer-events: none;
-}
-
-/* 紙のごく薄い陰影 */
-.header__board::before {
-  inset: 0;
-  background:
-    radial-gradient(
-      ellipse 60% 40% at 50% 100%,
-      rgba(151, 95, 38, 0.05),
-      transparent 70%
+    linear-gradient(
+      180deg,
+      #fdf3d4 0%,
+      #f5e6b8 100%
     );
-  border-radius: inherit;
-  mix-blend-mode: multiply;
-}
-
-/* グレイン (薄め) */
-.header__board::after {
-  inset: 6px;
-  background-image: radial-gradient(
-    rgba(74, 53, 30, 0.09) 0.5px,
-    transparent 0.5px
-  );
-  background-size: 6px 6px;
-  opacity: 0.4;
-  border-radius: inherit;
-  mix-blend-mode: multiply;
-}
-
-/* 上部の和紙テープ */
-.header__tape {
-  position: absolute;
-  top: -8px;
-  width: 70px;
-  height: 22px;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.35) 0,
-      rgba(255, 255, 255, 0.35) 4px,
-      rgba(255, 255, 255, 0.18) 4px,
-      rgba(255, 255, 255, 0.18) 8px
-    ),
-    rgba(232, 200, 156, 0.78);
-  border: 1px solid rgba(34, 27, 19, 0.22);
-  box-shadow: 0 4px 6px rgba(34, 27, 19, 0.18);
-  z-index: 4;
-}
-
-.header__tape--left {
-  left: 26px;
-  transform: rotate(-9deg);
-}
-
-.header__tape--right {
-  right: 26px;
-  transform: rotate(7deg);
-}
-
-/* 朱印 (右上の丸い印) */
-.header__seal {
-  position: absolute;
-  top: 18px;
-  right: 24px;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: var(--vermilion);
-  color: var(--paper-glow);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-weight: 400;
-  letter-spacing: -0.04em;
-  line-height: 0.92;
-  border: 2.5px solid var(--vermilion-deep);
+  border: 3px solid var(--ink);
+  border-radius: 6px;
   box-shadow:
-    inset 0 0 0 1.5px rgba(255, 255, 255, 0.4),
-    inset 0 0 14px rgba(138, 31, 18, 0.45),
-    2px 3px 0 rgba(74, 22, 12, 0.6);
-  transform: rotate(8deg);
-  z-index: 3;
-  filter:
-    drop-shadow(0 1px 0 rgba(0, 0, 0, 0.1))
-    contrast(1.05);
-  animation: seal-stamp 0.5s cubic-bezier(0.6, 1.5, 0.5, 1) 0.85s both;
+    inset 0 0 0 5px var(--paper-light),
+    inset 0 0 0 6px var(--ink),
+    inset 0 0 0 8px var(--paper-glow),
+    4px 6px 0 var(--ink),
+    0 14px 26px -12px rgba(80, 38, 14, 0.45);
 }
 
-.header__seal::before {
-  content: "";
+/* 4 隅のリベット */
+.header__rivet {
   position: absolute;
-  inset: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  pointer-events: none;
+  background: radial-gradient(
+    circle at 30% 30%,
+    #6e5a3a 0%,
+    var(--ink) 70%
+  );
+  box-shadow:
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 1px 0 rgba(255, 255, 255, 0.45);
+  z-index: 3;
 }
 
-.header__seal-char {
-  font-size: 1.05rem;
-  text-shadow:
-    0 0 1px rgba(138, 31, 18, 0.7);
+.header__rivet--tl {
+  top: 11px;
+  left: 11px;
 }
 
-/* タイトル */
+.header__rivet--tr {
+  top: 11px;
+  right: 11px;
+}
+
+.header__rivet--bl {
+  bottom: 11px;
+  left: 11px;
+}
+
+.header__rivet--br {
+  bottom: 11px;
+  right: 11px;
+}
+
+/* 上下の朱バー */
+.header__bar {
+  position: absolute;
+  left: 28px;
+  right: 28px;
+  height: 5px;
+  background: var(--vermilion);
+  box-shadow: inset 0 0 0 1px rgba(138, 31, 18, 0.6);
+  z-index: 2;
+}
+
+.header__bar--top {
+  top: 11px;
+}
+
+.header__bar--bottom {
+  bottom: 11px;
+}
+
+/* タイトル (太い書道風) */
 .header__title {
-  margin: 4px 0 0;
-  padding-top: 4px;
+  margin: 6px 0 0;
+  padding: 0;
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: clamp(2.1rem, 8.6vw, 3.1rem);
-  line-height: 1.05;
+  font-size: clamp(2.2rem, 8.6vw, 3.2rem);
+  line-height: 1.04;
   letter-spacing: 0.02em;
   color: var(--ink);
+  position: relative;
+  z-index: 1;
 }
 
 .header__title-row {
@@ -457,11 +428,11 @@ textarea {
 .header__title-char {
   display: inline-block;
   opacity: 0;
-  transform: translateY(-18px) rotate(-8deg);
-  animation: drop-in 0.6s cubic-bezier(0.45, 1.45, 0.45, 1) forwards;
+  transform: translateY(-12px);
+  animation: drop-in 0.55s cubic-bezier(0.45, 1.4, 0.45, 1) forwards;
   text-shadow:
-    1px 1px 0 rgba(34, 27, 19, 0.12),
-    2px 2px 0 rgba(34, 27, 19, 0.06);
+    1px 1px 0 rgba(255, 255, 255, 0.6),
+    2px 2px 0 rgba(34, 27, 19, 0.18);
 }
 
 .header__title-char:nth-child(4),
@@ -469,21 +440,18 @@ textarea {
   color: var(--vermilion-deep);
 }
 
-.header__title-char:nth-child(3n) {
-  transform-origin: bottom center;
-  animation-name: drop-in-tilt;
-}
-
 /* キャッチコピー */
 .header__catch {
-  margin: 2px 0 0;
+  margin: 2px 0 4px;
   font-family: var(--font-serif);
-  font-size: 1.02rem;
+  font-size: 0.96rem;
   font-weight: 500;
   color: var(--ink);
   letter-spacing: 0.04em;
   opacity: 0;
-  animation: fade-in 0.6s ease 0.85s forwards;
+  animation: fade-in 0.55s ease 0.6s forwards;
+  position: relative;
+  z-index: 1;
 }
 
 .header__catch-em {
@@ -499,84 +467,24 @@ textarea {
   left: -3px;
   right: -3px;
   bottom: 0;
-  height: 9px;
+  height: 8px;
   background: rgba(227, 106, 74, 0.28);
   z-index: -1;
   transform: skewX(-8deg);
 }
 
-/* 下の罫 + 拳闘場 */
-.header__rule {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  width: 100%;
-  margin-top: 4px;
-  opacity: 0;
-  animation: fade-in 0.5s ease 1s forwards;
-}
-
-.header__rule-line {
-  flex: 1 1 auto;
-  max-width: 90px;
-  height: 1px;
-  background: var(--ink-soft);
-  transform-origin: center;
-  animation: rule-extend 0.6s ease 1s both;
-}
-
-.header__rule-mark {
-  flex: 0 0 auto;
-  font-family: var(--font-serif);
-  font-weight: 700;
-  font-size: 0.82rem;
-  letter-spacing: 0.24em;
-  color: var(--ink-soft);
-  padding: 0 4px;
-}
-
-@keyframes drop-in-tilt {
-  to {
-    opacity: 1;
-    transform: translateY(0) rotate(2deg);
-  }
-}
-
-@keyframes seal-stamp {
-  0% {
-    opacity: 0;
-    transform: rotate(8deg) scale(2.2);
-    filter: blur(2px);
-  }
-  60% {
-    opacity: 1;
-    transform: rotate(8deg) scale(0.92);
-    filter: blur(0);
-  }
-  100% {
-    opacity: 1;
-    transform: rotate(8deg) scale(1);
-  }
-}
-
 @media (max-width: 520px) {
-  .header__board {
-    padding: 28px 18px 18px;
+  .header__sign {
+    padding: 20px 18px 16px;
   }
-  .header__seal {
-    top: 14px;
-    right: 14px;
-    width: 50px;
-    height: 50px;
+  .header__bar {
+    left: 22px;
+    right: 22px;
+    height: 4px;
   }
-  .header__seal-char {
-    font-size: 0.86rem;
-  }
-  .header__tape {
-    width: 56px;
-    height: 18px;
-    top: -6px;
+  .header__rivet {
+    width: 6px;
+    height: 6px;
   }
 }
 
@@ -1605,5 +1513,12 @@ textarea {
   }
   .stage__seal {
     transform: rotate(-8deg);
+  }
+}
+
+/* デスクトップ fit-to-window 用: 600px の stage 高さ上書きを再上書き */
+@media (min-width: 980px) {
+  .stage {
+    height: 480px;
   }
 }
