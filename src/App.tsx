@@ -3,7 +3,6 @@ import { SandbagStage } from "./components/SandbagStage";
 import { PresetPanel } from "./components/PresetPanel";
 import { SkillPanel } from "./components/SkillPanel";
 import { TextPunchPanel } from "./components/TextPunchPanel";
-import { PrivacyNote } from "./components/PrivacyNote";
 import { usePunch } from "./hooks/usePunch";
 
 export function App() {
@@ -85,7 +84,6 @@ export function App() {
             onToggleSound={toggleSound}
           />
         </div>
-        <PrivacyNote />
         <footer className="app-footer">
           <span className="app-footer__mono">@2026 NOA</span>
         </footer>

@@ -114,7 +114,7 @@ textarea {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 8px 20px 32px;
+  padding: 16px 20px 32px;
   padding-bottom: max(32px, env(safe-area-inset-bottom));
   gap: 16px;
 }
@@ -160,17 +160,21 @@ textarea {
     position: relative;
     min-height: 100dvh;
     height: auto;
-    padding: 6px 16px 20px;
+    padding: 12px 16px 20px;
     overflow: visible;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
   }
 
   .app__inner {
     width: 100%;
-    max-width: 1180px;
+    /* ステージ (7:5) を画面高さ最大限に活かしつつ、両側の panel 幅も
+       含めた layout 全体幅を計算で決める。
+       - 340px: stage 以外の vertical (header + gap + text + footer + padding)
+       - 488px: side panel 230 x 2 + 横の gap 14 x 2 */
+    max-width: calc((100dvh - 340px) * 1.4 + 488px);
     height: auto;
     min-height: 0;
     flex: 0 0 auto;
@@ -1025,6 +1029,15 @@ textarea {
   color: var(--ink-soft);
   line-height: 1.5;
   margin: 0;
+  z-index: 1;
+}
+
+.text-punch__privacy {
+  margin: 6px 0 0;
+  font-size: 0.7rem;
+  text-align: center;
+  color: var(--ink-mute);
+  letter-spacing: 0.04em;
   z-index: 1;
 }
 
