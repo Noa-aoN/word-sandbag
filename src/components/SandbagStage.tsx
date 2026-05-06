@@ -75,11 +75,6 @@ export function SandbagStage({
 
   return (
     <section ref={stageRef} className="stage" aria-label="サンドバッグの舞台">
-      <span className="stage__corner-mark stage__corner-mark--bl" aria-hidden="true">
-        <span>言</span>
-        <span>×</span>
-        <span>拳</span>
-      </span>
       <img className="ring-bg" src={ringSrc} alt="" aria-hidden="true" draggable={false} />
       <img
         className="chain-mount"

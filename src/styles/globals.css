@@ -622,36 +622,6 @@ textarea {
   border-radius: inherit;
 }
 
-/* 左下の小さな印 */
-.stage__corner-mark {
-  position: absolute;
-  bottom: 14px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-family: var(--font-display);
-  font-size: 0.7rem;
-  letter-spacing: 0.06em;
-  line-height: 1;
-  color: var(--vermilion-deep);
-  border: 1px solid currentColor;
-  padding: 5px 6px;
-  border-radius: 2px;
-  background: rgba(251, 242, 221, 0.6);
-  z-index: 6;
-  pointer-events: none;
-  transform: rotate(-2deg);
-}
-
-.stage__corner-mark--bl {
-  left: 14px;
-}
-
-.stage__corner-mark > span {
-  display: block;
-  padding: 1px 0;
-}
-
 .ring-bg {
   position: absolute;
   left: 50%;
