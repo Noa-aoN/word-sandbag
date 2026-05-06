@@ -14,10 +14,24 @@ type Props = {
   onToggleSound: () => void;
 };
 
-function speedTier(v: number): string {
-  if (v < 1.1) return "ゆっくり";
-  if (v < 1.8) return "ふつう";
-  return "はやい";
+const SPEED_TIERS: ReadonlyArray<{ label: string; value: number }> = [
+  { label: "ゆっくり", value: 1.0 },
+  { label: "ふつう", value: 1.6 },
+  { label: "はやい", value: 2.0 },
+  { label: "全力", value: 2.4 },
+];
+
+function nearestTierIndex(current: number): number {
+  let bestIdx = 0;
+  let bestDist = Infinity;
+  for (let i = 0; i < SPEED_TIERS.length; i++) {
+    const d = Math.abs(SPEED_TIERS[i].value - current);
+    if (d < bestDist) {
+      bestDist = d;
+      bestIdx = i;
+    }
+  }
+  return bestIdx;
 }
 
 export function SkillPanel({
@@ -29,56 +43,47 @@ export function SkillPanel({
   onThrowTowel,
   speed,
   onSpeedChange,
-  speedRange,
+  speedRange: _speedRange,
   soundOn,
   onToggleSound,
 }: Props) {
-  const speedDisplay = `${speed.toFixed(1)}×`;
+  const activeTier = nearestTierIndex(speed);
 
   return (
     <aside className="side-panel side-panel--right" aria-label="右パネル">
-      <section className="side-section">
-        <div className="side-section__head">
-          <span className="side-section__label">設定</span>
-        </div>
-        <div className="settings-row settings-row--stack">
-          <div className="speed-control">
-            <span className="speed-control__label">パンチ速度</span>
-            <input
-              type="range"
-              className="speed-control__slider"
-              min={speedRange.min}
-              max={speedRange.max}
-              step={speedRange.step}
-              value={speed}
-              onChange={(e) => onSpeedChange(parseFloat(e.target.value))}
-              aria-label="文字とパンチの速度"
-              aria-valuetext={`${speedTier(speed)} ${speedDisplay}`}
-            />
-            <span className="speed-control__readout">
-              <span className="speed-control__tier">{speedTier(speed)}</span>
-              <span className="speed-control__num">{speedDisplay}</span>
-            </span>
+      <section className="side-section side-section--settings">
+        <button
+          type="button"
+          className={`sound-toggle${soundOn ? " sound-toggle--on" : ""}`}
+          onClick={onToggleSound}
+          aria-pressed={soundOn}
+          aria-label={soundOn ? "効果音をオフにする" : "効果音をオンにする"}
+        >
+          <span className="sound-toggle__dot" aria-hidden="true" />
+          <span className="sound-toggle__label">{soundOn ? "音 ON" : "音 OFF"}</span>
+        </button>
+
+        <div className="speed-tier">
+          <span className="speed-tier__label">パンチ速度</span>
+          <div className="speed-tier__grid" role="group" aria-label="パンチ速度">
+            {SPEED_TIERS.map((t, i) => (
+              <button
+                key={t.label}
+                type="button"
+                className={`speed-tier__btn${i === activeTier ? " speed-tier__btn--on" : ""}`}
+                onClick={() => onSpeedChange(t.value)}
+                aria-pressed={i === activeTier}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
-          <button
-            type="button"
-            className={`sound-toggle${soundOn ? " sound-toggle--on" : ""}`}
-            onClick={onToggleSound}
-            aria-pressed={soundOn}
-            aria-label={soundOn ? "効果音をオフにする" : "効果音をオンにする"}
-          >
-            <span className="sound-toggle__dot" aria-hidden="true" />
-            <span className="sound-toggle__label">{soundOn ? "音 ON" : "音 OFF"}</span>
-          </button>
         </div>
       </section>
 
       <section className="side-section">
         <div className="side-section__head">
           <span className="side-section__label">技</span>
-          <span className="side-section__tag" aria-hidden="true">
-            SKILL
-          </span>
         </div>
         <div className="side-section__list" role="group" aria-label="技">
           <button
@@ -116,12 +121,9 @@ export function SkillPanel({
         </div>
       </section>
 
-      <section className="side-section">
+      <section className="side-section side-section--divided">
         <div className="side-section__head">
           <span className="side-section__label">特殊パンチ</span>
-          <span className="side-section__tag" aria-hidden="true">
-            SPECIAL
-          </span>
         </div>
         <div className="side-section__list side-section__list--center" role="group" aria-label="特殊パンチ">
           <button
@@ -141,7 +143,7 @@ export function SkillPanel({
         </div>
       </section>
 
-      <section className="side-section">
+      <section className="side-section side-section--divided">
         <button
           type="button"
           className="towel-button"
