@@ -1,6 +1,6 @@
 import { Header } from "./components/Header";
 import { SandbagStage } from "./components/SandbagStage";
-import { SpecialPanel } from "./components/SpecialPanel";
+import { PresetPanel } from "./components/PresetPanel";
 import { SkillPanel } from "./components/SkillPanel";
 import { TextPunchPanel } from "./components/TextPunchPanel";
 import { PrivacyNote } from "./components/PrivacyNote";
@@ -33,6 +33,7 @@ export function App() {
     tap,
     charImpact,
     removeWord,
+    throwTowel,
     speedRange,
   } = usePunch();
 
@@ -41,29 +42,29 @@ export function App() {
       <div className="app__inner">
         <Header />
         <div className="app__layout">
-          <SpecialPanel onCatPunch={catPunch} onQuickPunch={punchWith} />
-          <div className="app__center">
-            <SandbagStage
-              flyingWords={flyingWords}
-              onWordComplete={removeWord}
-              onCharImpact={charImpact}
-              onSandbagTap={tap}
-              hitKey={hitKey}
-              hitPower={hitPower}
-              hitKind={hitKind}
-              hitSide={hitSide}
-              hitIntensity={hitIntensity}
-              hitCount={hitCount}
-              message={message}
-              bagState={bagState}
-            />
-            <TextPunchPanel value={text} onChange={setText} onPunch={punch} />
-          </div>
+          <PresetPanel onPresetPunch={punchWith} />
+          <SandbagStage
+            flyingWords={flyingWords}
+            onWordComplete={removeWord}
+            onCharImpact={charImpact}
+            onSandbagTap={tap}
+            hitKey={hitKey}
+            hitPower={hitPower}
+            hitKind={hitKind}
+            hitSide={hitSide}
+            hitIntensity={hitIntensity}
+            hitCount={hitCount}
+            message={message}
+            bagState={bagState}
+          />
+          <TextPunchPanel value={text} onChange={setText} onPunch={punch} />
           <SkillPanel
             onCrunch={crunch}
             onHook={hook}
             onUpper={upper}
             onKick={kick}
+            onCatPunch={catPunch}
+            onThrowTowel={throwTowel}
             speed={speed}
             onSpeedChange={setSpeed}
             speedRange={speedRange}
