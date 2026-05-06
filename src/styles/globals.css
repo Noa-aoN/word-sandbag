@@ -114,9 +114,9 @@ textarea {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 24px 20px 40px;
-  padding-bottom: max(40px, env(safe-area-inset-bottom));
-  gap: 20px;
+  padding: 8px 20px 32px;
+  padding-bottom: max(32px, env(safe-area-inset-bottom));
+  gap: 16px;
 }
 
 .app__inner {
@@ -160,12 +160,12 @@ textarea {
     position: relative;
     min-height: 100dvh;
     height: auto;
-    padding: 14px 16px 24px;
+    padding: 6px 16px 20px;
     overflow: visible;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
   }
 
   .app__inner {
@@ -341,106 +341,24 @@ textarea {
   outline-offset: 3px;
 }
 
-/* --- Header (ジムの看板) ----------------------------------------------- */
+/* --- Header (シンプル) ------------------------------------------------- */
 
 .header {
   text-align: center;
-  padding: 4px 4px 2px;
-}
-
-.header__sign {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 12px 20px 10px;
-  margin: 0 auto;
-  max-width: 420px;
-  background:
-    linear-gradient(
-      180deg,
-      #fdf3d4 0%,
-      #f5e6b8 100%
-    );
-  border: 3px solid var(--ink);
-  border-radius: 6px;
-  box-shadow:
-    inset 0 0 0 5px var(--paper-light),
-    inset 0 0 0 6px var(--ink),
-    inset 0 0 0 8px var(--paper-glow),
-    4px 6px 0 var(--ink),
-    0 14px 26px -12px rgba(80, 38, 14, 0.45);
-}
-
-/* 4 隅のリベット */
-.header__rivet {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle at 30% 30%,
-    #6e5a3a 0%,
-    var(--ink) 70%
-  );
-  box-shadow:
-    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
-    0 1px 0 rgba(255, 255, 255, 0.45);
-  z-index: 3;
-}
-
-.header__rivet--tl {
-  top: 11px;
-  left: 11px;
-}
-
-.header__rivet--tr {
-  top: 11px;
-  right: 11px;
-}
-
-.header__rivet--bl {
-  bottom: 11px;
-  left: 11px;
-}
-
-.header__rivet--br {
-  bottom: 11px;
-  right: 11px;
-}
-
-/* 上下の朱バー */
-.header__bar {
-  position: absolute;
-  left: 28px;
-  right: 28px;
-  height: 5px;
-  background: var(--vermilion);
-  box-shadow: inset 0 0 0 1px rgba(138, 31, 18, 0.6);
-  z-index: 2;
-}
-
-.header__bar--top {
-  top: 11px;
-}
-
-.header__bar--bottom {
-  bottom: 11px;
+  padding: 0;
+  margin: 0;
 }
 
 /* タイトル (太い書道風) */
 .header__title {
-  margin: 4px 0 0;
+  margin: 0;
   padding: 0;
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: clamp(1.4rem, 3.4vw, 1.85rem);
+  font-size: clamp(1.5rem, 3.6vw, 2rem);
   line-height: 1.04;
   letter-spacing: 0.02em;
   color: var(--ink);
-  position: relative;
-  z-index: 1;
 }
 
 .header__title-row {
@@ -575,15 +493,15 @@ textarea {
 }
 
 .chain-mount {
+  /* チェーン画像は 320x320 (1:1)。height: auto + aspect-ratio で自然比を
+     維持し、object-fit: cover による下部クロップを発生させない。 */
   position: absolute;
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 64px;
-  height: calc(var(--bag-top-pct) - 8px);
-  min-height: 24px;
-  object-fit: cover;
-  object-position: top center;
+  width: 60px;
+  height: auto;
+  aspect-ratio: 1 / 1;
   z-index: 2;
   pointer-events: none;
   user-select: none;
