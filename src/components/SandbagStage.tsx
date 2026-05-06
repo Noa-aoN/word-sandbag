@@ -75,15 +75,6 @@ export function SandbagStage({
 
   return (
     <section ref={stageRef} className="stage" aria-label="サンドバッグの舞台">
-      <span className="stage__tape stage__tape--tl" aria-hidden="true" />
-      <span className="stage__tape stage__tape--tr" aria-hidden="true" />
-      <span className="stage__vertical" aria-hidden="true">
-        <span>本</span>
-        <span>日</span>
-        <span>受</span>
-        <span>付</span>
-        <span>中</span>
-      </span>
       <span className="stage__corner-mark stage__corner-mark--bl" aria-hidden="true">
         <span>言</span>
         <span>×</span>

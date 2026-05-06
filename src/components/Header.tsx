@@ -7,12 +7,6 @@ export function Header() {
         <span className="header__tape header__tape--left" aria-hidden="true" />
         <span className="header__tape header__tape--right" aria-hidden="true" />
 
-        <div className="header__round" aria-hidden="true">
-          <span className="header__round-pre">第</span>
-          <span className="header__round-num">五</span>
-          <span className="header__round-post">回戦</span>
-        </div>
-
         <div className="header__seal" aria-hidden="true">
           <span className="header__seal-char">言</span>
           <span className="header__seal-char">葉</span>
