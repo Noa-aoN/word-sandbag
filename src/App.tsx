@@ -48,23 +48,25 @@ export function App() {
         <Header />
         <div className="app__layout">
           <PresetPanel onPresetPunch={punchWith} />
-          <SandbagStage
-            flyingWords={flyingWords}
-            onWordComplete={removeWord}
-            onCharImpact={charImpact}
-            onSandbagTap={tap}
-            hitKey={hitKey}
-            hitPower={hitPower}
-            hitKind={hitKind}
-            hitSide={hitSide}
-            hitIntensity={hitIntensity}
-            hitCount={hitCount}
-            message={message}
-            bagState={bagState}
-            towelKey={towelKey}
-            strength={strength}
-          />
-          <TextPunchPanel value={text} onChange={setText} onPunch={punch} />
+          <div className="app__center">
+            <SandbagStage
+              flyingWords={flyingWords}
+              onWordComplete={removeWord}
+              onCharImpact={charImpact}
+              onSandbagTap={tap}
+              hitKey={hitKey}
+              hitPower={hitPower}
+              hitKind={hitKind}
+              hitSide={hitSide}
+              hitIntensity={hitIntensity}
+              hitCount={hitCount}
+              message={message}
+              bagState={bagState}
+              towelKey={towelKey}
+              strength={strength}
+            />
+            <TextPunchPanel value={text} onChange={setText} onPunch={punch} />
+          </div>
           <SkillPanel
             onCrunch={crunch}
             onHook={hook}
