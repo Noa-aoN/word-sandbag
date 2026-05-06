@@ -2,14 +2,12 @@ type Preset = { label: string; text: string };
 
 type Category = {
   name: string;
-  tag: string;
   presets: readonly Preset[];
 };
 
 const CATEGORIES: readonly Category[] = [
   {
     name: "泣き言（コード）",
-    tag: "DEV",
     presets: [
       { label: "バグだ", text: "バグだ" },
       { label: "型エラーつらい", text: "型エラーつらい" },
@@ -19,7 +17,6 @@ const CATEGORIES: readonly Category[] = [
   },
   {
     name: "怒り",
-    tag: "RAGE",
     presets: [
       { label: "ぶっとばせ", text: "ぶっとばせ" },
       { label: "なんでだよ", text: "なんでだよ" },
@@ -28,7 +25,6 @@ const CATEGORIES: readonly Category[] = [
   },
   {
     name: "自己受容",
-    tag: "OK",
     presets: [
       { label: "まあいっか", text: "まあいっか" },
       { label: "ぼちぼちで", text: "ぼちぼちで" },
@@ -37,7 +33,6 @@ const CATEGORIES: readonly Category[] = [
   },
   {
     name: "感謝",
-    tag: "THX",
     presets: [
       { label: "ありがとう", text: "ありがとう" },
       { label: "助かった", text: "助かった" },
@@ -46,7 +41,6 @@ const CATEGORIES: readonly Category[] = [
   },
   {
     name: "ネタ",
-    tag: "FUN",
     presets: [
       {
         label: "スリランカの首都",
@@ -69,17 +63,11 @@ export function PresetPanel({ onPresetPunch }: Props) {
     <aside className="side-panel side-panel--left" aria-label="左パネル">
       <header className="side-panel__head">
         <span className="side-panel__title">プリセットパンチ</span>
-        <span className="side-panel__caption" aria-hidden="true">
-          PRESETS
-        </span>
       </header>
       {CATEGORIES.map((cat) => (
         <section className="side-section" key={cat.name}>
           <div className="side-section__head">
             <span className="side-section__label">{cat.name}</span>
-            <span className="side-section__tag" aria-hidden="true">
-              {cat.tag}
-            </span>
           </div>
           <div
             className="side-section__list"

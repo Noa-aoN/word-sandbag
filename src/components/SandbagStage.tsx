@@ -68,9 +68,6 @@ export function SandbagStage({
         aria-hidden="true"
         draggable={false}
       />
-      <span className="stage__corner-tag" aria-hidden="true">
-        受付中
-      </span>
       {hitCount > 0 && (
         <div
           key={hitCount}
