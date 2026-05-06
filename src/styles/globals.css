@@ -235,22 +235,13 @@ textarea {
   align-items: center;
 }
 
-.side-section__list--row {
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-}
-
 .side-section__list .quick-punch-button {
   width: 100%;
   flex: 0 0 auto;
 }
 
 .side-section__list--center .quick-punch-button--cat,
-.side-section__list--center .quick-punch-button--cash,
-.side-section__list--row .quick-punch-button--cat,
-.side-section__list--row .quick-punch-button--cash {
+.side-section__list--center .quick-punch-button--cash {
   width: auto;
 }
 

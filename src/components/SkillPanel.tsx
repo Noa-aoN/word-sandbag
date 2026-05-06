@@ -136,7 +136,7 @@ export function SkillPanel({
         <div className="side-section__head">
           <span className="side-section__label">特殊パンチ</span>
         </div>
-        <div className="side-section__list side-section__list--center side-section__list--row" role="group" aria-label="特殊パンチ">
+        <div className="side-section__list side-section__list--center" role="group" aria-label="特殊パンチ">
           <button
             type="button"
             className="quick-punch-button quick-punch-button--cat"

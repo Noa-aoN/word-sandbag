@@ -422,64 +422,69 @@ function cashWhomp() {
   const master = getMaster(c);
   const now = c.currentTime;
 
-  // Heavy thud (a stack of paper has weight)
+  // 紙束で「バサッ」と叩く: 短い低域スラップ + 高域の紙ノイズ + 速い riffle
+  // (chime / bell は使わない)
   thumpInto(c, master, now, {
-    bodyFreqStart: 90,
-    bodyFreqEnd: 30,
-    bodyDur: 0.42,
-    bodyVol: 0.4,
-    subFreqStart: 50,
-    subFreqEnd: 22,
-    subDur: 0.34,
-    subVol: 0.3,
-    slapBP: 1300,
-    slapBPQ: 1.7,
-    slapDur: 0.07,
-    slapVol: 0.18,
-    clickVol: 0.07,
-    clickDur: 0.016,
+    bodyFreqStart: 130,
+    bodyFreqEnd: 50,
+    bodyDur: 0.16,
+    bodyVol: 0.26,
+    subFreqStart: 60,
+    subFreqEnd: 32,
+    subDur: 0.14,
+    subVol: 0.18,
+    slapBP: 2000,
+    slapBPQ: 1.2,
+    slapDur: 0.05,
+    slapVol: 0.16,
+    clickVol: 0.04,
+    clickDur: 0.012,
   });
 
-  // Paper riffle: two short high-passed noise bursts
-  for (const startOffset of [0, 0.06]) {
-    const at = now + startOffset;
+  // 紙の「バサッ」本体: 中〜高域のノイズが短く広がる
+  {
     const { node, offset } = noiseSourceWithOffset(c);
     const hp = c.createBiquadFilter();
     hp.type = "highpass";
-    hp.frequency.setValueAtTime(2200, at);
+    hp.frequency.setValueAtTime(800, now);
     const bp = c.createBiquadFilter();
     bp.type = "bandpass";
-    bp.frequency.setValueAtTime(4500, at);
-    bp.Q.setValueAtTime(0.9, at);
+    bp.frequency.setValueAtTime(2400, now);
+    bp.frequency.exponentialRampToValueAtTime(900, now + 0.18);
+    bp.Q.setValueAtTime(0.7, now);
+    const gain = c.createGain();
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.22, now + 0.006);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+    node.connect(hp);
+    hp.connect(bp);
+    bp.connect(gain);
+    gain.connect(master);
+    node.start(now, offset);
+    node.stop(now + 0.24);
+  }
+
+  // 紙束のページがめくれる速い riffle (3 連の高域ノイズ)
+  for (const tOff of [0.012, 0.04, 0.075]) {
+    const at = now + tOff;
+    const { node, offset } = noiseSourceWithOffset(c);
+    const hp = c.createBiquadFilter();
+    hp.type = "highpass";
+    hp.frequency.setValueAtTime(3000, at);
+    const bp = c.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.setValueAtTime(5200 + Math.random() * 1400, at);
+    bp.Q.setValueAtTime(1.4, at);
     const gain = c.createGain();
     gain.gain.setValueAtTime(0, at);
-    gain.gain.linearRampToValueAtTime(0.13, at + 0.008);
-    gain.gain.exponentialRampToValueAtTime(0.0008, at + 0.13);
+    gain.gain.linearRampToValueAtTime(0.08, at + 0.003);
+    gain.gain.exponentialRampToValueAtTime(0.0006, at + 0.05);
     node.connect(hp);
     hp.connect(bp);
     bp.connect(gain);
     gain.connect(master);
     node.start(at, offset);
-    node.stop(at + 0.15);
-  }
-
-  // Cha-ching ding (two-note bell)
-  for (const [freq, atOffset, vol] of [
-    [1760, 0.02, 0.18] as const,
-    [2349, 0.12, 0.12] as const,
-  ]) {
-    const at = now + atOffset;
-    const osc = c.createOscillator();
-    osc.type = "triangle";
-    osc.frequency.setValueAtTime(freq, at);
-    const gain = c.createGain();
-    gain.gain.setValueAtTime(0, at);
-    gain.gain.linearRampToValueAtTime(vol, at + 0.005);
-    gain.gain.exponentialRampToValueAtTime(0.0006, at + 0.5);
-    osc.connect(gain);
-    gain.connect(master);
-    osc.start(at);
-    osc.stop(at + 0.55);
+    node.stop(at + 0.06);
   }
 }
 
